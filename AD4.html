@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apple-Optimized Chatbot</title>
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<!-- Custom Styles -->
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Custom styles for Safari */
+    @supports (-webkit-touch-callout: none) {
+      /* Add your Safari-specific styles here */
+      #chat-container {
+        -webkit-border-radius: 8px;
+      }
+    }
+  </style>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Stick the input field to the bottom */
+    input[placeholder="Enter message"] {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+    /* Ensure the chat window takes full height */
+    
+    #chatHistory {
+        height: calc(80vh); /* Reduced height to 80% of the viewport height */
+    }
+
+</style><style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    :root {
+        --input-field-height: 40px;
+    }
+
+    /* Custom styles for Safari */
+    @supports (-webkit-touch-callout: none) {
+        #chat-container {
+            -webkit-border-radius: 8px;
+        }
+    }
+
+    /* Stick the input field to the bottom */
+    .message-input {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: var(--input-field-height);
+    }
+
+    /* Ensure the chat window takes full height */
+    
+    #chatHistory {
+        height: calc(80vh); /* Reduced height to 80% of the viewport height */
+    }
+
+
+    /* Media Queries for different screen sizes */
+    @media (max-width: 768px) {
+        :root {
+            --input-field-height: 60px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="container mt-5">
+<div class="bg-light p-4 rounded" id="chat-container">
+<textarea class="form-control mb-3" disabled="" id="chatHistory"></textarea>
+<div class="input-group">
+<input class="form-control" id="userPrompt" placeholder="Enter your message..." type="text"/>
+<button class="btn btn-primary" onclick="fetchChatCompletion()">Send</button>
+</div>
+</div>
+</div>
+<!-- Bootstrap 5 JS (Optional) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let chatHistory = [];
+    let userPromptElement = document.getElementById("userPrompt");
+    let chatHistoryElement = document.getElementById("chatHistory");
+    let uploadedFileContent = null;
+
+    function getUploadedFileContent() {
+        return uploadedFileContent;
+    }
+
+    async function fetchChatCompletion() {
+        const prompt = userPromptElement.value;
+        chatHistory.push({role: "user", content: prompt});
+        const fileContent = getUploadedFileContent();
+        if (fileContent) {
+            chatHistory.push({role: "user", content: fileContent});
+        }
+        updateChatDisplay();
+        const apiKey = "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";
+        const model = "gpt-3.5-turbo";
+        const url = `https://api.openai.com/v1/chat/completions`;
+        const headers = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+        };
+        const body = JSON.stringify({
+            model: model,
+            messages: chatHistory
+        });
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: body
+            });
+            const data = await response.json();
+            const assistantMessage = data.choices[0].message.content.trim();
+            chatHistory.push({role: "assistant", content: assistantMessage});
+            updateChatDisplay();
+            userPromptElement.value = "";
+        } catch (error) {
+            console.error("Error fetching chat completion:", error);
+        }
+    }
+
+    function updateChatDisplay() {
+        let chatText = "";
+        for (const message of chatHistory) {
+            chatText += `[${message.role}] ${message.content}
+`;
+        }
+        chatHistoryElement.value = chatText;
+    }
+
+    function uploadFile() {
+        const fileInput = document.getElementById("fileInput");
+        const selectedFile = fileInput.files[0];
+        if (!selectedFile) {
+            alert("Please select a file to upload.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            uploadedFileContent = event.target.result;
+            console.log("File content:", uploadedFileContent);
+            alert("File uploaded successfully!");
+        };
+        reader.readAsText(selectedFile);
+    }
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let textArea = document.getElementById("userPrompt");
+    textArea.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            fetchChatCompletion();
+        }
+    });
+});
+</script></body>
+</html>

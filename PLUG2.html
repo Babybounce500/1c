@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apple-Optimized Chatbot</title>
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<!-- Custom Styles -->
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Custom styles for Safari */
+    @supports (-webkit-touch-callout: none) {
+      /* Add your Safari-specific styles here */
+      #chat-container {
+        -webkit-border-radius: 8px;
+      }
+    }
+  </style>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Stick the input field to the bottom */
+    input[placeholder="Enter message"] {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+    /* Ensure the chat window takes full height */
+    
+    #chatHistory {
+        height: calc(80vh); /* Reduced height to 80% of the viewport height */
+    }
+
+</style><style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    :root {
+        --input-field-height: 40px;
+    }
+
+    /* Custom styles for Safari */
+    @supports (-webkit-touch-callout: none) {
+        #chat-container {
+            -webkit-border-radius: 8px;
+        }
+    }
+
+    /* Stick the input field to the bottom */
+    .message-input {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: var(--input-field-height);
+    }
+
+    /* Ensure the chat window takes full height */
+    
+    #chatHistory {
+        height: calc(80vh); /* Reduced height to 80% of the viewport height */
+    }
+
+
+    /* Media Queries for different screen sizes */
+    @media (max-width: 768px) {
+        :root {
+            --input-field-height: 60px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="container mt-5">
+<div class="bg-light p-4 rounded" id="chat-container">
+<textarea class="form-control mb-3" disabled="" id="chatHistory"></textarea>
+<div class="input-group">
+<input class="form-control" id="userPrompt" placeholder="Enter your message..." type="text"/>
+<button class="btn btn-primary" onclick="fetchChatCompletion()">Send</button>
+</div>
+</div>
+</div>
+<!-- Bootstrap 5 JS (Optional) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let chatHistory = [];
+    let userPromptElement = document.getElementById("userPrompt");
+    let chatHistoryElement = document.getElementById("chatHistory");
+    let uploadedFileContent = null;
+
+    function getUploadedFileContent() {
+        return uploadedFileContent;
+    }
+
+    async function fetchChatCompletion() {
+        const prompt = userPromptElement.value;
+        chatHistory.push({role: "user", content: prompt});
+        const fileContent = getUploadedFileContent();
+        if (fileContent) {
+            chatHistory.push({role: "user", content: fileContent});
+        }
+        updateChatDisplay();
+        const apiKey = "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";
+        const model = "gpt-3.5-turbo";
+        const url = `https://api.openai.com/v1/chat/completions`;
+        const headers = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+        };
+        const body = JSON.stringify({
+            model: model,
+            messages: chatHistory
+        });
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: body
+            });
+            const data = await response.json();
+            const assistantMessage = data.choices[0].message.content.trim();
+            chatHistory.push({role: "assistant", content: assistantMessage});
+            updateChatDisplay();
+            userPromptElement.value = "";
+        } catch (error) {
+            console.error("Error fetching chat completion:", error);
+        }
+    }
+
+    function updateChatDisplay() {
+        let chatText = "";
+        for (const message of chatHistory) {
+            chatText += `[${message.role}] ${message.content}
+`;
+        }
+        chatHistoryElement.value = chatText;
+    }
+
+    function uploadFile() {
+        const fileInput = document.getElementById("fileInput");
+        const selectedFile = fileInput.files[0];
+        if (!selectedFile) {
+            alert("Please select a file to upload.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            uploadedFileContent = event.target.result;
+            console.log("File content:", uploadedFileContent);
+            alert("File uploaded successfully!");
+        };
+        reader.readAsText(selectedFile);
+    }
+</script>
+<script>
+// For first bot
+document.addEventListener("DOMContentLoaded", function() {
+    let textArea1 = document.getElementById("userPrompt");
+    textArea1.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            fetchChatCompletion();
+        }
+    });
+});
+
+// For second bot
+document.addEventListener("DOMContentLoaded", function() {
+    let textArea2 = document.getElementById("userInput");
+    textArea2.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            fetchStockData();
+        }
+    });
+});
+</script><script>
+// For second bot
+document.addEventListener("DOMContentLoaded", function() {
+    let textArea2 = document.getElementById("userInput");
+    textArea2.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            processInput();
+        }
+    });
+});
+</script></body>
+</html>
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Stock Analysis Chatbot with Candlestick Chart</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="chatWindow" style="border: 1px solid #ccc; padding: 20px; height: 300px; overflow: auto;">
+<!-- Chat messages will be appended here -->
+</div>
+<input id="userInput" placeholder="Type your message..." style="width: 80%;" type="text"/>
+<button onclick="processInput()">Send</button>
+<div id="candlestick_chart_div" style="width: 100%; height: 400px;"></div>
+<script>
+        // Load Google Charts
+        google.charts.load('current', {'packages':['corechart']});
+
+        const API_KEY = '64d7d0670ee1f8.90133693';  // Hard-coded API key
+
+        function processInput() {
+            const userInput = document.getElementById('userInput').value;
+
+            if (userInput.startsWith('*')) {
+                const command = userInput.substring(1).split(' ');
+                const [units, timeframe] = command[0].match(/(\d+)([a-zA-Z]+)/).slice(1);
+                
+                const symbol = command[1] || 'AAPL.US';  // Default to AAPL.US if no symbol is provided
+                const apiUrl = `https://eodhistoricaldata.com/api/eod/${symbol}?api_token=${API_KEY}&fmt=json`;
+
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        const slicedData = data.slice(-parseInt(units));  // Get the latest N records
+                        displayStockData(slicedData);
+                        drawCandlestickChart(slicedData);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+
+            // Clear the input field
+            document.getElementById('userInput').value = '';
+        }
+
+        function displayStockData(data) {
+            const chatWindow = document.getElementById('chatWindow');
+            let displayText = 'Stock Data:\n';
+            
+            data.forEach(record => {
+                displayText += `Date: ${record.date}, Close Price: ${record.close}\n`;
+            });
+
+            chatWindow.innerHTML += `<div>User: ${document.getElementById('userInput').value}</div>`;
+            chatWindow.innerHTML += `<div>Bot: ${displayText}</div>`;
+        }
+
+        function drawCandlestickChart(data) {
+            const candlestickData = data.map(item => {
+                return [item.date, parseFloat(item.low), parseFloat(item.open), parseFloat(item.close), parseFloat(item.high)];
+            });
+
+            const dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('string', 'Zeitraum');
+            dataTable.addColumn('number', 'Low');
+            dataTable.addColumn('number', 'Opening');
+            dataTable.addColumn('number', 'Closing');
+            dataTable.addColumn('number', 'High');
+            dataTable.addRows(candlestickData);
+
+            const options = {
+                legend: 'none',
+                candlestick: {
+                    fallingColor: { strokeWidth: 0, fill: '#a52714' },
+                    risingColor: { strokeWidth: 0, fill: '#0f9d58' }
+                },
+                bar: { groupWidth: '25%' }
+            };
+
+            const chart = new google.visualization.CandlestickChart(document.getElementById('candlestick_chart_div'));
+            chart.draw(dataTable, options);
+        }
+    </script>
+</body>
+</html>
+Commands: <br/>*3d AAPL.US für 3 Tage <br/>*3w aapl.us = Apple für 3 Wochen <br/>*3m appl.us = Apple für 3 wochen

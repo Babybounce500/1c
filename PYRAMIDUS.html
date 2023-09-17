@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stock Analysis</title>
+<style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
+            background-color: #f4f4f7;
+            color: #333;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 22px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
+            padding: 10px 0;
+            position: relative;
+            font-weight: 500;
+        }
+        
+        li:before {
+            content: '\2022';
+            color: #3498db;
+            font-size: 30px;
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style></head>
+<body style="text-align: left;"><h1>PYRAMIDUS Entry</h1>
+<!-- Input fields -->
+Aktienname: <input id="aktiename" type="text" value="Sample Stock"/><br/>
+Kursspanne A: <input id="kursspanneA" type="number" value="5"/><br/>
+Kurs A: <input id="kursA" type="number" value="10"/><br/>
+<button onclick="analyse()">Analyse</button>
+<!-- Results table -->
+<table id="ergebnisTabelle" style="display: none;">
+<tr>
+<td id="aktienameTd"></td>
+<td id="trendTd"></td>
+<td>50 %</td>
+</tr>
+<tr>
+<td></td>
+<td id="trendTd2"></td>
+<td>30 %</td>
+</tr>
+<tr>
+<td></td>
+<td id="trendTd3"></td>
+<td>20 %</td>
+</tr>
+</table>
+<script>
+    function analyse() {
+        var aktiename = document.getElementById("aktiename").value;
+        document.getElementById("aktienameTd").textContent = aktiename;
+
+        var kursspanneA = parseFloat(document.getElementById("kursspanneA").value);
+        var kursA = parseFloat(document.getElementById("kursA").value);
+
+        var shortValue = kursA - kursspanneA / 2;
+        var longValue = kursA + kursspanneA / 2;
+
+        var shortValue2 = kursA - kursspanneA;
+        var longValue2 = kursA + kursspanneA;
+
+        var shortValue3 = kursA - 1.5 * kursspanneA;
+        var longValue3 = kursA + 1.5 * kursspanneA;
+
+        document.getElementById("trendTd").textContent = shortValue.toFixed(2) + " € SHORT, " + longValue.toFixed(2) + " € LONG";
+        document.getElementById("trendTd2").textContent = shortValue2.toFixed(2) + " € SHORT 2, " + longValue2.toFixed(2) + " € LONG 2";
+        document.getElementById("trendTd3").textContent = shortValue3.toFixed(2) + " € SHORT 3, " + longValue3.toFixed(2) + " € LONG 3";
+
+        document.getElementById("ergebnisTabelle").style.display = "table";
+    }
+</script>
+</body>
+</html>

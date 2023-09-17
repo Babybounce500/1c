@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aktienhandel Filter</title>
+</head>
+<body>
+
+<h2>Aktienhandel Volumen Filter</h2>
+
+<form name="aktienForm">
+    <label for="aktienname">Aktienname:</label><br>
+    <input type="text" id="aktienname" name="aktienname"><br><br>
+
+    <label for="volumenC">Volumen C:</label><br>
+    <input type="number" id="volumenC" name="volumenC"><br><br>
+
+    <label for="volumenB">Volumen B:</label><br>
+    <input type="number" id="volumenB" name="volumenB"><br><br>
+
+    <label for="volumenA">Volumen A:</label><br>
+    <input type="number" id="volumenA" name="volumenA"><br><br>
+
+    <input type="button" value="Überprüfen" onclick="checkVolumen()">
+</form>
+
+<p>Ergebnis: <span id="ergebnis">-</span></p>
+
+<script>
+    function checkVolumen() {
+        var volumenC = parseFloat(document.getElementById("volumenC").value);
+        var volumenB = parseFloat(document.getElementById("volumenB").value);
+        var volumenA = parseFloat(document.getElementById("volumenA").value);
+
+        if (volumenB > volumenA && volumenB > volumenC) {
+            document.getElementById("ergebnis").innerText = "GO";
+        } else {
+            document.getElementById("ergebnis").innerText = "NO";
+        }
+    }
+</script>
+
+</body>
+</html>

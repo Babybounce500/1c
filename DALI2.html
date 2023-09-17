@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Image Generation with OpenAI</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/></head>
+<body>
+<h1>Generate an Image</h1>
+<input id="prompt" placeholder="Enter a prompt" type="text"/>
+<button onclick="generateImage()">Generate</button>
+<h2>Generated Image:</h2>
+<img alt="Generated Image" id="generatedImage" src=""/>
+<script>
+        async function generateImage() {
+            const prompt = document.getElementById("prompt").value;
+            const apiKey = "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";  // Replace with your actual API key
+            const url = "https://api.openai.com/v1/images/generations";
+
+            const headers = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            };
+
+            const body = JSON.stringify({
+                prompt: prompt,
+                n: 1,
+                size: "1024x1024"
+            });
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: headers,
+                    body: body
+                });
+
+                const data = await response.json();
+                const imageUrl = data.data[0].url;
+
+                document.getElementById("generatedImage").src = imageUrl;
+
+            } catch (error) {
+                console.error("Error generating image:", error);
+            }
+        }
+    </script>
+<script>
+// For the image generator
+document.addEventListener("DOMContentLoaded", function() {
+    let textArea = document.getElementById("prompt");
+    textArea.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            generateImage();
+        }
+    });
+});
+</script></body>
+</html>

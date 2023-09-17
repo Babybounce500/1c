@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Chart</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        
+        function drawChart() {
+            const closeC = parseFloat(document.getElementById("closeC").value);
+            const closeB = parseFloat(document.getElementById("closeB").value);
+            const closeA = parseFloat(document.getElementById("closeA").value);
+
+            var data = google.visualization.arrayToDataTable([
+                ['Close', 'Price', { role: 'style' }],
+                ['Close C', closeC, 'black'],
+                ['Close B', closeB, 'black'],
+                ['Close A', closeA, 'black']
+            ]);
+
+            var options = {
+                title: 'Closing Prices',
+                legend: { position: 'bottom' },
+                hAxis: {
+                    title: 'Close'
+                },
+                vAxis: {
+                    title: 'Price'
+                }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+    <h2>Enter Closing Prices</h2>
+    <table>
+        <tr>
+            <td>Close C:</td>
+            <td><input type="number" id="closeC" value="100"></td>
+        </tr>
+        <tr>
+            <td>Close B:</td>
+            <td><input type="number" id="closeB" value="105"></td>
+        </tr>
+        <tr>
+            <td>Close A:</td>
+            <td><input type="number" id="closeA" value="103"></td>
+        </tr>
+    </table>
+    <button onclick="drawChart()">Draw Chart</button>
+    <div id="chart_div" style="width: 600px; height: 400px;"></div>
+</body>
+</html>

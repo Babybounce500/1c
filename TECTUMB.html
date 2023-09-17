@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Beispiel-Seite</title>
+
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Anfrage für Aktienkurse</title>
+<style>
+body {
+    background-color: #251532; /* Hintergrundfarbe */
+    color: white; /* Textfarbe */
+    font-family: Arial, sans-serif; /* Schriftart */
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+
+        /* Add your CSS styling here */
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+    
+/* Dark theme styles */
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+button {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.chat-window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Mobile Responsive styles */
+@media only screen and (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Banking Style for Input Fields */
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Banking Style for Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 3px solid #333;
+    text-align: left;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Banking Style for Containers */
+.container {
+    background-color: #1e1e1e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Responsive Table Styles for Mobile Devices */
+@media screen and (max-width: 768px) {
+    table {
+        width: auto;
+    }
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+
+/* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+</style>
+</head>
+<body>
+
+<section id="tectum-dark-mode-section"><body>
+<h1>TECTUM API</h1>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+
+<body>
+
+<h1>Candlestick Chart mit Kursen</h1>
+
+<div style="margin-bottom: 20px;">
+    <label for="stockSymbol">Aktiensymbol eingeben:</label>
+    <input type="text" id="stockSymbol" placeholder="z.B. AAPL.US">
+    <label for="timeframe">Zeitraum:</label>
+    <select id="timeframe">
+        <option value="d">Tage</option>
+        <option value="w">Wochen</option>
+        <option value="m">Monate</option>
+    </select>
+    <button onclick="drawChart()">Chart anzeigen</button>
+</div>
+
+<div id="candlestick_chart_div" style="width: 100%; height: 400px;"></div>
+
+<h2>Candlestick Werte</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Zeitraum</th>
+            <th>Low</th>
+            <th>Opening</th>
+            <th>Closing</th>
+            <th>High</th>
+        </tr>
+    </thead>
+    <tbody id="candlestick_data_table">
+        <!-- Die Daten werden hier eingefügt -->
+    </tbody>
+</table>
+
+
+    <script>
+        // Load Google Charts API
+        google.charts.load('current', {'packages':['corechart']});
+
+        function drawChart() {
+            const stockSymbol = document.getElementById('stockSymbol').value.toUpperCase();
+            const timeframe = document.getElementById('timeframe').value;
+
+            // Calculate start and end date based on selected timeframe
+            const today = new Date();
+            let startDate, endDate;
+            if (timeframe === 'd') {
+                startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3); // 3 days back
+                endDate = today;
+            } else if (timeframe === 'w') {
+                startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 21); // 3 weeks back
+                endDate = today;
+            } else if (timeframe === 'm') {
+                startDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()); // 3 months back
+                endDate = today;
+            }
+
+            // Perform the API request to get the candlestick data
+            fetch(`https://eodhistoricaldata.com/api/eod/${stockSymbol}?api_token=64d7d0670ee1f8.90133693&fmt=json&from=${startDate.toISOString().split('T')[0]}&to=${endDate.toISOString().split('T')[0]}&period=${timeframe}`)
+            .then(response => response.json())
+            .then(data => {
+                const candlestickData = data.map(item => {
+                    return [item.date, parseFloat(item.low), parseFloat(item.open), parseFloat(item.close), parseFloat(item.high)];
+                });
+
+                const dataTable = new google.visualization.DataTable();
+                dataTable.addColumn('string', 'Zeitraum');
+                dataTable.addColumn('number', 'Low');
+                dataTable.addColumn('number', 'Opening');
+                dataTable.addColumn('number', 'Closing');
+                dataTable.addColumn('number', 'High');
+                dataTable.addRows(candlestickData);
+
+                const options = {
+                    legend: 'none',
+                    candlestick: {
+                        fallingColor: { strokeWidth: 0, fill: '#a52714' },
+                        risingColor: { strokeWidth: 0, fill: '#0f9d58' }
+                    },
+                    bar: { groupWidth: '25%' } // Reducing the width of the candlesticks
+                };
+
+                const chart = new google.visualization.CandlestickChart(document.getElementById('candlestick_chart_div'));
+                chart.draw(dataTable, options);
+
+                // Populate the table with the candlestick values
+                const tableBody = document.getElementById('candlestick_data_table');
+                tableBody.innerHTML = '';
+
+                candlestickData.forEach(candlestick => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${candlestick[0]}</td>
+                        <td>${candlestick[1]}</td>
+                        <td>${candlestick[2]}</td>
+                        <td>${candlestick[3]}</td>
+                        <td>${candlestick[4]}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('There was an error fetching the data:', error);
+            });
+        }
+    </script>
+</section></body>
+</html>
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Stock Volume Analysis</title>
+<script>
+        function analyzeVolume() {
+            // Get the volume values from the table
+            var volumeA = parseInt(document.getElementById('volumeA').value);
+            var volumeB = parseInt(document.getElementById('volumeB').value);
+            var volumeC = parseInt(document.getElementById('volumeC').value);
+            
+            // Initialize result variable
+            var result = "NO";
+            
+            // Check the conditions
+            if (volumeB > volumeA && volumeB > volumeC) {
+                result = "GO";
+            }
+            
+            // Display the result
+            document.getElementById('result').innerHTML = result;
+        }
+    </script>
+</head>
+<body>
+<h1>TECTUM VOLUME</h1>
+<table border="1">
+<tr>
+<th>Volume A</th>
+<th>Volume B</th>
+<th>Volume C</th>
+</tr>
+<tr>
+<td><input id="volumeA" type="number"/></td>
+<td><input id="volumeB" type="number"/></td>
+<td><input id="volumeC" type="number"/></td>
+</tr>
+</table>
+<button onclick="analyzeVolume()">Analyze</button>
+<p>Result: <span id="result"></span></p>
+</body>
+</html>
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Quote Analysis</title>
+</head>
+<body>
+<h1>TECTUM DACHBODEN</h1>
+<table border="1">
+<tr>
+<th>Quote A</th>
+<th>Quote B</th>
+<th>Quote C</th>
+<th>Trading Action</th>
+</tr>
+<tr>
+<td><input id="quoteA" type="text"/></td>
+<td><input id="quoteB" type="text"/></td>
+<td><input id="quoteC" type="text"/></td>
+<td><button onclick="analyzeQuotes()">Analyze</button></td>
+</tr>
+</table>
+<p id="result"></p>
+<script>
+        function analyzeQuotes() {
+            var quoteA = parseFloat(document.getElementById("quoteA").value);
+            var quoteB = parseFloat(document.getElementById("quoteB").value);
+            var quoteC = parseFloat(document.getElementById("quoteC").value);
+            var result = "";
+            
+            if (isNaN(quoteA) || isNaN(quoteB) || isNaN(quoteC)) {
+                result = "Please enter valid numeric values for Quote A, Quote B, and Quote C.";
+            } else {
+                if (quoteA > quoteB && quoteB < quoteC) {
+                    result = "Action: LONG";
+                } else if (quoteA < quoteB && quoteB > quoteC) {
+                    result = "Action: SHORT";
+                } else {
+                    result = "Action: NO";
+                }
+            }
+            
+            document.getElementById("result").textContent = result;
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stock Analysis</title>
+</head>
+<body><h1>PYRAMIDUS ENTRY</h1>
+<!-- Input fields -->
+Aktienname: <input id="aktiename" type="text" value="Sample Stock"/><br/>
+Kursspanne A: <input id="kursspanneA" type="number" value="5"/><br/>
+Kurs A: <input id="kursA" type="number" value="10"/><br/>
+<button onclick="analyse()">Analyse</button>
+<!-- Results table -->
+<table id="ergebnisTabelle" style="display: none;">
+<tr>
+<td id="aktienameTd"></td>
+<td id="trendTd"></td>
+<td>50 %</td>
+</tr>
+<tr>
+<td></td>
+<td id="trendTd2"></td>
+<td>30 %</td>
+</tr>
+<tr>
+<td></td>
+<td id="trendTd3"></td>
+<td>20 %</td>
+</tr>
+</table>
+<script>
+    function analyse() {
+        var aktiename = document.getElementById("aktiename").value;
+        document.getElementById("aktienameTd").textContent = aktiename;
+
+        var kursspanneA = parseFloat(document.getElementById("kursspanneA").value);
+        var kursA = parseFloat(document.getElementById("kursA").value);
+
+        var shortValue = kursA - kursspanneA / 2;
+        var longValue = kursA + kursspanneA / 2;
+
+        var shortValue2 = kursA - kursspanneA;
+        var longValue2 = kursA + kursspanneA;
+
+        var shortValue3 = kursA - 1.5 * kursspanneA;
+        var longValue3 = kursA + 1.5 * kursspanneA;
+
+        document.getElementById("trendTd").textContent = shortValue.toFixed(2) + " € SHORT, " + longValue.toFixed(2) + " € LONG";
+        document.getElementById("trendTd2").textContent = shortValue2.toFixed(2) + " € SHORT 2, " + longValue2.toFixed(2) + " € LONG 2";
+        document.getElementById("trendTd3").textContent = shortValue3.toFixed(2) + " € SHORT 3, " + longValue3.toFixed(2) + " € LONG 3";
+
+        document.getElementById("ergebnisTabelle").style.display = "table";
+    }
+</script>
+</body>
+</html>

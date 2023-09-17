@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste der Börsen</title>
+</head>
+<body>
+
+<h1>Liste der Börsen</h1>
+
+<ul id="exchangeList">
+    <!-- Die Liste der Börsen wird hier eingefügt -->
+</ul>
+
+<script>
+    fetch('https://eodhistoricaldata.com/api/exchanges-list/?api_token=64d7d0670ee1f8.90133693')
+        .then(response => response.json())
+        .then(data => {
+            const exchangeList = document.getElementById('exchangeList');
+            data.forEach(exchange => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${exchange.Code} - ${exchange.Name}`;
+                exchangeList.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            console.error('Es gab einen Fehler beim Abrufen der Daten:', error);
+        });
+</script>
+
+</body>
+</html>

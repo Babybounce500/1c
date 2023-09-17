@@ -1,0 +1,222 @@
+
+
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Anfrage für Aktienkurse</title>
+<style>
+body {
+    background-color: #251532; /* Hintergrundfarbe */
+    color: white; /* Textfarbe */
+    font-family: Arial, sans-serif; /* Schriftart */
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+
+        /* Add your CSS styling here */
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+    
+/* Dark theme styles */
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+button {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.chat-window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Mobile Responsive styles */
+@media only screen and (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Banking Style for Input Fields */
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Banking Style for Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 3px solid #333;
+    text-align: left;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Banking Style for Containers */
+.container {
+    background-color: #1e1e1e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Responsive Table Styles for Mobile Devices */
+@media screen and (max-width: 768px) {
+    table {
+        width: auto;
+    }
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+
+/* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+</style>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+
+    <script>
+        let tickerData = [];
+
+        // Function to fetch data
+        async function fetchData() {
+            // Your hardcoded API Token
+            const api_token = "64d7d0670ee1f8.90133693";
+
+            // Get the exchange code from the user input
+            const exchange_code = document.getElementById("exchange_code_input").value.trim();
+
+            if (exchange_code === "") {
+                alert("Please enter an exchange code.");
+                return;
+            }
+
+            // Construct the URL for fetching the list of tickers for the specified exchange
+            const url = `https://eodhistoricaldata.com/api/exchange-symbol-list/${exchange_code}?api_token=${api_token}`;
+
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.text();
+                    tickerData = data.split('\n').map(line => line.split(',').slice(0, 2));
+                    displayData(tickerData);
+                } else {
+                    alert("Response Error: " + response.status);
+                }
+            } catch (error) {
+                alert("API Fetch Error: " + error);
+            }
+        }
+
+        // Function to display data in table format
+        function displayData(data) {
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+            
+            const headerRow = document.createElement('tr');
+            ['Code', 'Name'].forEach(text => {
+                const th = document.createElement('th');
+                th.appendChild(document.createTextNode(text));
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.id = `row-${index}`;  // Assign an ID to each row for easier navigation
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.appendChild(document.createTextNode(cell));
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            const displayElement = document.getElementById("ticker-data");
+            displayElement.innerHTML = '';
+            displayElement.appendChild(table);
+        }
+
+        // Function to handle jump to letter
+        function jumpToLetter() {
+            const letter = document.getElementById("jump_to_letter_input").value.toLowerCase();
+            const index = tickerData.findIndex(line => {
+                return line[0].toLowerCase().startsWith(letter);
+            });
+
+            if (index !== -1) {
+                const rowElement = document.getElementById(`row-${index}`);
+                if (rowElement) {
+                    rowElement.scrollIntoView();
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+<h1>List of Tickers for Specified Exchange</h1>
+
+<label for="exchange_code_input">Enter Exchange Code:</label>
+<input type="text" id="exchange_code_input" placeholder="e.g., US, NYSE">
+<button onclick="fetchData()">Fetch Data</button>
+
+<label for="jump_to_letter_input">Jump to Letter:</label>
+<input type="text" id="jump_to_letter_input" onkeyup="jumpToLetter()" placeholder="Enter starting letter">
+
+<div id="ticker-data" style="height: 400px; overflow-y: scroll;">
+</div>
+
+</body>
+</html>

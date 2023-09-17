@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trade Journal with Analysis</title>
+    
+<style>
+  /* General styles */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2 {
+    color: #444;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ccc;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f4f4f4;
+  }
+
+  /* Buttons */
+  .btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .btn:hover {
+    background-color: #0056b3;
+  }
+
+  /* Media Queries for Mobile */
+  @media screen and (max-width: 768px) {
+    .container {
+      padding: 10px;
+    }
+    table {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+  }
+</style>
+
+</head>
+<body>
+
+<h2>Trade Journal</h2>
+Beispiel für Tradeeingabe: 2023-09-04 22:18:39 | 2023-10-15 15:30:00 | ALV | LONG | A1XYZ1 | 325,71 | 108,57 | 193,57 | 3 | 18 | 580,71 | 255 | 78,29 | Einzelne Mock-Datenzeile
+<h3>Add New Trade</h3>
+<form id="addTradeForm">
+    <input type="button" value="Clear All" onclick="clearAll()">
+    <label for="tradeData">Trade Data (Paste a trade row here):</label><br>
+    <textarea id="tradeData" rows="4" cols="50"></textarea><br>
+    <input type="button" value="Add Trade" onclick="addTrade()">
+</form>
+
+<h3>Trades</h3>
+<table id="tradeTable">
+    <thead>
+        <tr>
+            <th>Datum/Uhrzeit Kauf</th>
+            <th>Datum/Uhrzeit Verkauf</th>
+            <th>Basiswert</th>
+            <th>Trend</th>
+            <th>WKN</th>
+            <th>Einsteigssumme</th>
+            <th>Kaufkurs</th>
+            <th>Verkaufkurs</th>
+            <th>Stückzahl</th>
+            <th>Haltedauer</th>
+            <th>Ausstiegssumme</th>
+            <th>G. u. V. In €</th>
+            <th>G. u. V. In %</th>
+            <th>Notizen</th>
+        </tr>
+    </thead>
+    <tbody id="tradeBody">
+        <!-- Trades will be populated here -->
+    </tbody>
+</table>
+
+<h3>Analysis</h3>
+<div id="analysisResults">
+    <!-- Analysis results will be displayed here -->
+</div>
+
+<script>
+let trades = JSON.parse(localStorage.getItem('trades')) || [];
+
+function addTradeRow(trade) {
+    let table = document.getElementById("tradeBody");
+    let newRow = table.insertRow(table.rows.length);
+    Object.keys(trade).forEach((key, index) => {
+        let cell = newRow.insertCell(index);
+        cell.innerHTML = trade[key];
+    });
+}
+
+function addTrade() {
+    let tradeData = document.getElementById('tradeData').value.trim();
+    if (tradeData !== '') {
+        let tradeArray = tradeData.split(/\s*\|\s*/);
+        if (tradeArray.length === 14) {
+            let newTrade = {
+                'Datum/Uhrzeit Kauf': tradeArray[0],
+                'Datum/Uhrzeit Verkauf': tradeArray[1],
+                'Basiswert': tradeArray[2],
+                'Trend': tradeArray[3],
+                'WKN': tradeArray[4],
+                'Einsteigssumme': tradeArray[5],
+                'Kaufkurs': tradeArray[6],
+                'Verkaufkurs': tradeArray[7],
+                'Stückzahl': tradeArray[8],
+                'Haltedauer': tradeArray[9],
+                'Ausstiegssumme': tradeArray[10],
+                'G. u. V. In €': tradeArray[11],
+                'G. u. V. In %': tradeArray[12],
+                'Notizen': tradeArray[13]
+            };
+            trades.push(newTrade);
+            addTradeRow(newTrade);
+            localStorage.setItem('trades', JSON.stringify(trades));
+            document.getElementById('tradeData').value = '';
+            calculateStats();
+        } else {
+            alert('Bitte geben Sie den Trade im richtigen Format ein.');
+        }
+    } else {
+        alert('Bitte fügen Sie den Trade-Daten ein.');
+    }
+}
+
+function calculateStats() {
+    let totalProfit = 0;
+    let totalLoss = 0;
+    let totalDuration = 0;
+    let bestTrade = null;
+    let worstTrade = null;
+
+    trades.forEach(trade => {
+        let profitLossStr = trade['G. u. V. In €'].replace(',', '.').replace(/[^0-9.-]/g, '');
+        let profitLoss = parseFloat(profitLossStr);
+        if (profitLoss > 0) {
+            totalProfit += profitLoss;
+        } else {
+            totalLoss += Math.abs(profitLoss);
+        }
+
+        let durationStr = trade['Haltedauer'].replace(',', '.').replace(/[^0-9.-]/g, '');
+        let duration = parseFloat(durationStr);
+        if (!isNaN(duration)) {
+            totalDuration += duration;
+        }
+
+        if (bestTrade === null || profitLoss > bestTrade) {
+            bestTrade = profitLoss;
+        }
+        if (worstTrade === null || profitLoss < worstTrade) {
+            worstTrade = profitLoss;
+        }
+    });
+
+    let avgDuration = totalDuration / trades.length;
+    let avgProfit = totalProfit / trades.length;
+    let avgLoss = totalLoss / trades.length;
+    
+    let totalEntryAmount = 0;
+
+    trades.forEach(trade => {
+        let entryAmountStr = trade['Einsteigssumme'].replace(',', '.').replace(/[^0-9.-]/g, '');
+        let entryAmount = parseFloat(entryAmountStr);
+        if (!isNaN(entryAmount)) {
+            totalEntryAmount += entryAmount;
+        }
+    });
+
+    let avgEntryAmount = totalEntryAmount / trades.length;
+    let netProfit = totalProfit - totalLoss;
+    
+
+    let analysisResults = document.getElementById('analysisResults');
+    analysisResults.innerHTML = `
+        <p>Gesamtergebnis: € ${netProfit.toFixed(2)}</p>
+        <p>Durchschnittliche Haltedauer: ${avgDuration.toFixed(2)} Tage</p>
+        <p>Durchschnittlicher Gewinn: € ${avgProfit.toFixed(2)}</p>
+        <p>Durchschnittlicher Verlust: € ${avgLoss.toFixed(2)}</p>
+        <p>Bester Trade: € ${bestTrade.toFixed(2)}</p>
+        
+    <p>Schlechtester Trade: € ${worstTrade.toFixed(2)}</p>
+    <p>Durchschnittliche Einstiegssumme: € ${avgEntryAmount.toFixed(2)}</p>
+    
+    `;
+}
+
+function loadTrades() {
+    trades.forEach(trade => {
+        addTradeRow(trade);
+    });
+}
+
+loadTrades();
+calculateStats();
+
+
+function clearAll() {
+    localStorage.removeItem('trades');
+    trades = [];
+    let tradeBody = document.getElementById('tradeBody');
+    while (tradeBody.firstChild) {
+        tradeBody.removeChild(tradeBody.firstChild);
+    }
+    calculateStats();
+}
+</script>
+    
+</body>
+</html>
