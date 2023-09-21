@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Gallery</title>
+    <style>
+        /* Desktop */
+        @media screen and (min-width: 1024px) {
+            .gallery {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);  /* 2 Bilder pro Reihe */
+                gap: 16px;
+            }
+        }
+        /* Mobile */
+        @media screen and (max-width: 1023px) {
+            .gallery {
+                display: block;
+            }
+            .gallery img {
+                width: 100%;
+                margin-bottom: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>My Gallery</h1>
+    <div class="gallery">
+        <img src="https://babybounce500.github.io/Kunst2/1.jpg" alt="Image 1">
+        <img src="https://babybounce500.github.io/Kunst2/2.jpg" alt="Image 2">
+        <img src="https://babybounce500.github.io/Kunst2/3.jpg" alt="Image 3">
+        <img src="https://babybounce500.github.io/Kunst2/4.jpg" alt="Image 4">
+        <img src="https://babybounce500.github.io/Kunst2/5.jpg" alt="Image 5">
+        <img src="https://babybounce500.github.io/Kunst2/6.jpg" alt="Image 6">
+        <img src="https://babybounce500.github.io/Kunst2/7.jpg" alt="Image 7">
+        <img src="https://babybounce500.github.io/Kunst2/8.jpg" alt="Image 8">
+        <img src="https://babybounce500.github.io/Kunst2/9.jpg" alt="Image 9">
+        <img src="https://babybounce500.github.io/Kunst2/10.jpg" alt="Image 10">
+        <img src="https://babybounce500.github.io/Kunst2/11.jpg" alt="Image 11">
+        <img src="https://babybounce500.github.io/Kunst2/12.jpg" alt="Image 12">
+        <img src="https://babybounce500.github.io/Kunst2/13.jpg" alt="Image 13">
+        <img src="https://babybounce500.github.io/Kunst2/14.jpg" alt="Image 14">
+        <img src="https://babybounce500.github.io/Kunst2/15.jpg" alt="Image 15"> 
+        <img src="https://babybounce500.github.io/Kunst2/16.jpg" alt="Image 16">
+        <img src="https://babybounce500.github.io/Kunst2/17.jpg" alt="Image 17">
+        <img src="https://babybounce500.github.io/Kunst2/18.jpg" alt="Image 18">
+        <img src="https://babybounce500.github.io/Kunst2/19.jpg" alt="Image 19">
+        <img src="https://babybounce500.github.io/Kunst2/20.jpg" alt="Image 20">
+        <!-- ... füge mehr Bilder hier hinzu ... -->
+    </div>
+
+</body>
+</html>
