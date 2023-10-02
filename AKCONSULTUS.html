@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kombinierte Aktienanalyse</title>
+</head>
+<body>
+
+<h1>Kombinierte Aktienanalyse</h1>
+
+<!-- Input for Stock Symbol -->
+<label for="stockSymbolCandle">Aktiensymbol:</label>
+<input type="text" id="stockSymbolCandle" placeholder="AAPL">
+<button onclick="performCandleApiRequest()">Daten abrufen</button>
+
+<!-- Additional Fields for analysis -->
+<label for="aktienname">Aktienname:</label>
+<input id="aktienname" type="text"><br/>
+
+<input type="text" id="kursA" placeholder="Kurs A">
+<input type="text" id="kursB" placeholder="Kurs B">
+<input type="text" id="kursC" placeholder="Kurs C">
+<div id="result"></div>
+
+<!-- Additional Fields for Kontostand -->
+<label for="kontostand">Kontostand:</label>
+<input id="kontostand" type="text"><br/>
+<label for="kursrisiko">Kursrisiko:</label>
+<input id="kursrisiko" type="text"><br/>
+<button onclick="calculatePositionSize()">Positionsgröße berechnen</button>
+
+<p>Aktueller Kontostand: <span id="aktuellKontostand"></span></p>
+<p>Positionsgröße (Stückzahl): <span id="stückzahl"></span></p>
+
+<!-- Result Table -->
+<table id="ergebnisTable">
+  <tr>
+    <th>Aktienname</th>
+    <th>LONG</th>
+    <th>SHORT</th>
+    <th>Kursrisiko</th>
+    <th>Stückzahl</th>
+    <th>Termin</th>
+  </tr>
+</table>
+
+<script>
+    let lastFridayDate = null;  // Neue Variable für das Datum des letzten Freitags
+  
+    function performCandleApiRequest() {
+      const stockSymbol = document.getElementById('stockSymbolCandle').value.toUpperCase();
+      const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol}?api_token=64d7d0670ee1f8.90133693&fmt=json`;
+  
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const fridayData = data.filter(item => new Date(item.date).getDay() === 5);
+  
+          if (fridayData.length >= 2) {
+            const kursA = fridayData[fridayData.length - 1].close.toFixed(2);
+            const kursB = fridayData[fridayData.length - 2].close.toFixed(2);
+            const kursC = fridayData[fridayData.length - 3]?.close.toFixed(2) || 0;
+  
+            // Speichere das Datum des letzten Freitags
+            lastFridayDate = fridayData[fridayData.length - 1].date;
+  
+            document.getElementById("kursA").value = kursA;
+            document.getElementById("kursB").value = kursB;
+            document.getElementById("kursC").value = kursC;
+            document.getElementById("aktienname").value = stockSymbol;
+          }
+  
+          analyzeStocks();
+        })
+        .catch(error => {
+          console.error('There was an error fetching the candle data:', error);
+        });
+    }
+  
+    function analyzeStocks() {
+      const aktienname = document.getElementById("aktienname").value;
+      const kursA = parseFloat(document.getElementById("kursA").value);
+      const kursB = parseFloat(document.getElementById("kursB").value);
+      const kursC = parseFloat(document.getElementById("kursC").value);
+  
+      const diffAB = Math.abs(kursA - kursB);
+      const diffCB = Math.abs(kursC - kursB);
+      const result = (diffAB < diffCB) ? 'GO' : 'NO';
+  
+      document.getElementById("result").innerHTML = result;
+  
+      if (result === 'GO') {
+        const row = document.getElementById("ergebnisTable").insertRow(-1);
+        row.insertCell(0).innerHTML = aktienname;
+        row.insertCell(1).innerHTML = Math.max(kursA, kursB, kursC);
+        row.insertCell(2).innerHTML = Math.min(kursA, kursB, kursC);
+        row.insertCell(3).innerHTML = Math.abs(kursA - kursB).toFixed(2);
+        row.insertCell(4).setAttribute("data-open", "true");
+  
+        // Füge das Datum des letzten Freitags hinzu
+        row.insertCell(5).innerHTML = lastFridayDate;
+      }
+    }
+  
+    // ... (der Rest deines Codes für calculatePositionSize bleibt unverändert)
+  
+  
+  function calculatePositionSize() {
+  // Kommas durch Punkte ersetzen und zu Float konvertieren
+  var kontostand = parseFloat(document.getElementById("kontostand").value.replace(",", "."));
+  var kursrisiko = parseFloat(document.getElementById("kursrisiko").value.replace(",", "."));
+  
+  // Prozentsatz von 1% des Kontostands
+  var prozentsatz = 1;
+  
+  // Berechne die Stückzahl und runde sie ab
+  var stückzahl = Math.floor((kontostand * prozentsatz / 100) / kursrisiko);
+  
+  // Zeige die Ergebnisse an
+  document.getElementById("stückzahl").innerHTML = stückzahl;
+  document.getElementById("aktuellKontostand").innerHTML = kontostand.toFixed(2);
+  
+  // Aktualisiere die Tabelle, falls die "Stückzahl"-Zelle als "offen" markiert ist
+  var stückzahlCell = document.querySelector("[data-open='true']");
+  if (stückzahlCell) {
+    stückzahlCell.innerHTML = stückzahl;
+    stückzahlCell.removeAttribute("data-open");
+  }
+}
+
+</script>
+
+</body>
+</html>
