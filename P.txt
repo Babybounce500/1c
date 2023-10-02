@@ -1,0 +1,11 @@
+entwerfe einen fiktiven aktientrade aus den daten deiner antwort. der trade soll die recommandation der daten befolgen. der trade soll entweder einen Long oder Short einstiegskurs bei last availabe price haben  / stopp beim tageshoch bzw tagestief/ Kursrisiko=differenz einstieg - stopp (Long) bzw. Stopp- Einstieg (Short) /kursziel und zeitrahmen=intraday enthalten. entwerfe einen tradingplan, um den trade durchzuführen. mach mir eine ready to go übersicht 
+
+entwerfe einen fiktiven aktientrade aus den daten deiner antwort. der trade soll die recommandation der daten befolgen. der trade soll entweder einen Long oder Short einstiegskurs bei last availabe price haben  / stopp beim average haben/ kursziel und zeitrahmen=intraday enthalten
+
+
+entwerfe einen fiktiven reversal aktientrade aus den daten deiner antwort. mit einen stopbuy einstieg, der über dem letzten preis liegt. der trade soll einen einstiegskurs / stopp/ kursziel und intraday zeitrahmen enthalten
+
+
+entwerfe einen  reversal trade mit einen stoploss einstieg, der unter dem letzten preis liegt. der trade soll einen einstiegskurs / stopp/ kursziel und inmtraday zeitrahmen enthalten
+
+entwerfe einen  breakout trade mit einen stoploss bzw. stopbuy einstieg, der unter bzw. über dem letzten preis liegt. der trade soll einen Long oder Short einstiegskurs / stopp/ kursziel und intraday zeitrahmen enthalten
