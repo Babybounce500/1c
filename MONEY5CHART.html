@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>API Abfrage für Big 5 Fonds</title>
+    <style>
+        /* Stilisieren Sie Ihre Seite nach Bedarf */
+    </style>
+</head>
+<body>
+    <h1>API Abfrage für Big 5 Fonds</h1>
+
+    <!-- Ein Button, um die API-Abfrage auszulösen -->
+    <button onclick="getLatestCloses()">API Abfrage für neueste Kurse</button>
+
+    <!-- Tabelle zur Anzeige der Aktiendaten -->
+    <table border="1" id="stockData">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Neuester Schlusskurs</th>
+                <th>Vorheriger Schlusskurs</th>
+                <th>Vorvorheriger Schlusskurs</th>
+                <th>Datum des neuesten Kurses</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Hier werden die abgerufenen Daten angezeigt -->
+        </tbody>
+    </table>
+
+    <h2>BIG 5 Fund (neuester): <span id="big5FundLatest">-</span></h2>
+    <h2>BIG 5 Fund (vorheriger): <span id="big5FundPrevious">-</span></h2>
+    <h2>BIG 5 Fund (vorvorheriger): <span id="big5FundPrePrevious">-</span></h2>
+
+    <script>
+        async function getLatestCloses() {
+            const stockSymbols = ['MTX.XETRA', 'HNR1.XETRA', 'SRT3.XETRA', 'HNR1.XETRA', 'RHM.XETRA'];
+            const apiToken = "64d7d0670ee1f8.90133693";
+            const tableBody = document.getElementById('stockData').querySelector('tbody');
+            let sumLatest = 0, sumPrevious = 0, sumPrePrevious = 0;
+            let count = 0;
+
+            for (const stockSymbol of stockSymbols) {
+                const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol.trim()}?api_token=${apiToken}&fmt=json&limit=3`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    let data = await response.json();
+                    data.reverse();
+
+                    if (data && data.length >= 3) {
+                        const latestClose = parseFloat(data[0].close).toFixed(2);
+                        const previousClose = parseFloat(data[1].close).toFixed(2);
+                        const prePreviousClose = parseFloat(data[2].close).toFixed(2);
+                        const latestDate = data[0].date;
+
+                        sumLatest += parseFloat(latestClose);
+                        sumPrevious += parseFloat(previousClose);
+                        sumPrePrevious += parseFloat(prePreviousClose);
+                        count++;
+
+                        const row = document.createElement('tr');
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = stockSymbol;
+
+                        const latestCloseCell = document.createElement('td');
+                        latestCloseCell.textContent = latestClose;
+
+                        const previousCloseCell = document.createElement('td');
+                        previousCloseCell.textContent = previousClose;
+
+                        const prePreviousCloseCell = document.createElement('td');
+                        prePreviousCloseCell.textContent = prePreviousClose;
+
+                        const latestDateCell = document.createElement('td');
+                        latestDateCell.textContent = latestDate;
+
+                        row.appendChild(nameCell);
+                        row.appendChild(latestCloseCell);
+                        row.appendChild(previousCloseCell);
+                        row.appendChild(prePreviousCloseCell);
+                        row.appendChild(latestDateCell);
+                        tableBody.appendChild(row);
+                    } else {
+                        console.log(`No data available for ${stockSymbol}`);
+                    }
+                } catch (error) {
+                    console.error(`An error occurred for ${stockSymbol}:`, error);
+                }
+            }
+
+            // ... (Rest des Codes bleibt unverändert)
+
+if (count > 0) {
+    const avgLatest = (sumLatest / count).toFixed(2);
+    const avgPrevious = (sumPrevious / count).toFixed(2);
+    const avgPrePrevious = (sumPrePrevious / count).toFixed(2);
+
+    document.getElementById('big5FundLatest').textContent = avgLatest;
+    document.getElementById('big5FundPrevious').textContent = avgPrevious;
+    document.getElementById('big5FundPrePrevious').textContent = avgPrePrevious;
+
+    // Übertrage diese Werte zu den Input-Feldern im Chart
+    updateChartInputs(avgLatest, avgPrevious, avgPrePrevious);
+}
+
+// ...
+
+function updateChartInputs(latest, previous, prePrevious) {
+    document.getElementById('closeA').value = latest;
+    document.getElementById('closeB').value = previous;
+    document.getElementById('closeC').value = prePrevious;
+}
+        }
+    </script>
+</body>
+</html>
+// LINIENCHART
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Chart</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        
+        function drawChart() {
+            const closeC = parseFloat(document.getElementById("closeC").value);
+            const closeB = parseFloat(document.getElementById("closeB").value);
+            const closeA = parseFloat(document.getElementById("closeA").value);
+
+            var data = google.visualization.arrayToDataTable([
+                ['Close', 'Price', { role: 'style' }],
+                ['Close C', closeC, 'black'],
+                ['Close B', closeB, 'black'],
+                ['Close A', closeA, 'black']
+            ]);
+
+            var options = {
+                title: 'Closing Prices',
+                legend: { position: 'bottom' },
+                hAxis: {
+                    title: 'Close'
+                },
+                vAxis: {
+                    title: 'Price'
+                }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+    <h2>Enter Closing Prices</h2>
+    <table>
+        <tr>
+            <td>Close C:</td>
+            <td><input type="number" id="closeC" value="100"></td>
+        </tr>
+        <tr>
+            <td>Close B:</td>
+            <td><input type="number" id="closeB" value="105"></td>
+        </tr>
+        <tr>
+            <td>Close A:</td>
+            <td><input type="number" id="closeA" value="103"></td>
+        </tr>
+    </table>
+    <button onclick="drawChart()">Draw Chart</button>
+    <div id="chart_div" style="width: 600px; height: 400px;"></div>
+</body>
+</html>
