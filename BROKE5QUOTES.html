@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Anfrage für Aktienkurse</title>
+<style>
+body {
+    background-color: #251532; /* Hintergrundfarbe */
+    color: white; /* Textfarbe */
+    font-family: Arial, sans-serif; /* Schriftart */
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+
+        /* Add your CSS styling here */
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+    
+/* Dark theme styles */
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+button {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.chat-window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Mobile Responsive styles */
+@media only screen and (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Banking Style for Input Fields */
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Banking Style for Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 3px solid #333;
+    text-align: left;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Banking Style for Containers */
+.container {
+    background-color: #1e1e1e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Responsive Table Styles for Mobile Devices */
+@media screen and (max-width: 768px) {
+    table {
+        width: auto;
+    }
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+
+/* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+</style>
+</head>
+<body>
+    <h1>BROKE 5 HEDGEFUND</h1>
+    <button onclick="getLatestCloses()">API Abfrage für neueste Kurse</button>
+    <table border="1" id="stockData">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Neuester Schlusskurs (Short)</th>
+                <th>Vorheriger Schlusskurs (Short)</th>
+                <th>Datum des neuesten Kurses</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <h2>Broke 5 HedgeFund (neuester): <span id="big5FundLatest">-</span></h2>
+    <h2>Broke 5 HedgeFund (vorheriger): <span id="big5FundPrevious">-</span></h2>
+    <h2>Performance: <span id="big5FundPerformance">-</span></h2>
+    <h2>Performance seit First Quote: <span id="big5PerformanceFromFirstQuote">-</span></h2>
+
+    <script>
+        const firstQuote = -15.09;
+
+        async function getLatestCloses() {
+            const stockSymbols = ['DBK.XETRA', 'CBK.XETRA', 'DTE.XETRA', 'VNA.XETRA', 'ENR.XETRA'];
+            const apiToken = "64d7d0670ee1f8.90133693";
+            const tableBody = document.getElementById('stockData').querySelector('tbody');
+            let sumLatest = 0, sumPrevious = 0;
+            let count = 0;
+
+            for (const stockSymbol of stockSymbols) {
+                const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol.trim()}?api_token=${apiToken}&fmt=json&limit=2`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    let data = await response.json();
+                    data.reverse();
+
+                    if (data && data.length >= 2) {
+                        const latestClose = -1 * parseFloat(data[0].close);
+                        const previousClose = -1 * parseFloat(data[1].close);
+                        const latestDate = data[0].date;
+
+                        sumLatest += latestClose;
+                        sumPrevious += previousClose;
+                        count++;
+
+                        const row = document.createElement('tr');
+                        const nameCell = document.createElement('td');
+                        const latestCloseCell = document.createElement('td');
+                        const previousCloseCell = document.createElement('td');
+                        const latestDateCell = document.createElement('td');
+
+                        nameCell.textContent = stockSymbol;
+                        latestCloseCell.textContent = latestClose.toFixed(2);
+                        previousCloseCell.textContent = previousClose.toFixed(2);
+                        latestDateCell.textContent = latestDate;
+
+                        row.appendChild(nameCell);
+                        row.appendChild(latestCloseCell);
+                        row.appendChild(previousCloseCell);
+                        row.appendChild(latestDateCell);
+                        
+                        tableBody.appendChild(row);
+                    }
+                } catch (error) {
+                    console.error(`An error occurred for ${stockSymbol}:`, error);
+                }
+            }
+
+            if (count > 0) {
+                const avgLatest = (sumLatest / count).toFixed(2);
+                const avgPrevious = (sumPrevious / count).toFixed(2);
+
+                document.getElementById('big5FundLatest').innerText = avgLatest;
+                document.getElementById('big5FundPrevious').innerText = avgPrevious;
+
+                const performance = ((avgLatest - avgPrevious) / Math.abs(avgPrevious)) * 100;
+                document.getElementById('big5FundPerformance').innerText = performance.toFixed(2) + '%';
+
+                const performanceFromFirstQuote = ((avgLatest - firstQuote) / Math.abs(firstQuote)) * 100;
+                document.getElementById('big5PerformanceFromFirstQuote').innerText = performanceFromFirstQuote.toFixed(2) + '%';
+            }
+        }
+    </script>
+</body>
+</html>
