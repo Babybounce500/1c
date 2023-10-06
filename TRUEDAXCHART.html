@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Anfrage für Aktienkurse</title>
+<style>
+body {
+    background-color: #251532; /* Hintergrundfarbe */
+    color: white; /* Textfarbe */
+    font-family: Arial, sans-serif; /* Schriftart */
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+
+        /* Add your CSS styling here */
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+    
+/* Dark theme styles */
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+button {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.chat-window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Mobile Responsive styles */
+@media only screen and (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Banking Style for Input Fields */
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Banking Style for Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 3px solid #333;
+    text-align: left;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Banking Style for Containers */
+.container {
+    background-color: #1e1e1e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Responsive Table Styles for Mobile Devices */
+@media screen and (max-width: 768px) {
+    table {
+        width: auto;
+    }
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+
+/* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+</style></head>
+<body>
+    <h1>API Abfrage für Big 5 Fonds</h1>
+
+    <!-- Ein Button, um die API-Abfrage auszulösen -->
+    <button onclick="getLatestCloses()">API Abfrage für neueste Kurse</button>
+
+    <!-- Tabelle zur Anzeige der Aktiendaten -->
+    <table border="1" id="stockData">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Neuester Schlusskurs</th>
+                <th>Vorheriger Schlusskurs</th>
+                <th>Vorvorheriger Schlusskurs</th>
+                <th>Datum des neuesten Kurses</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Hier werden die abgerufenen Daten angezeigt -->
+        </tbody>
+    </table>
+
+    <h2>BIG 5 Fund (neuester): <span id="big5FundLatest">-</span></h2>
+    <h2>BIG 5 Fund (vorheriger): <span id="big5FundPrevious">-</span></h2>
+    <h2>BIG 5 Fund (vorvorheriger): <span id="big5FundPrePrevious">-</span></h2>
+
+    <script>
+        async function getLatestCloses() {
+            const stockSymbols = ['ADS.XETRA', 'AIR.XETRA', 'ALV.XETRA', 'BAS.XETRA', 'BAYN.XETRA','BEI.XETRA', 'BMW.XETRA', 'BNR.XETRA', 'CBK.XETRA', 'CON.XETRA','1COV.XETRA', 'DTG.XETRA', 'DBK.XETRA', 'DB1.XETRA', 'DTE.XETRA','DHL.XETRA', 'EOAN.XETRA', 'FRE.XETRA', 'HNR1.XETRA', 'HEI.XETRA','HEN3.XETRA', 'IFX.XETRA', 'MBG.XETRA', 'MRK.XETRA', 'MTX.XETRA','MUV2.XETRA', 'RHM.XETRA', 'RWE.XETRA', 'SAP.XETRA', 'SRT3.XETRA','SIE.XETRA', 'ENR.XETRA', 'SHL.XETRA', 'SY1.XETRA', 'VOW3.XETRA',
+            'VNA.XETRA', 'ZAL.XETRA'];
+            const apiToken = "64d7d0670ee1f8.90133693";
+            const tableBody = document.getElementById('stockData').querySelector('tbody');
+            let sumLatest = 0, sumPrevious = 0, sumPrePrevious = 0;
+            let count = 0;
+
+            for (const stockSymbol of stockSymbols) {
+                const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol.trim()}?api_token=${apiToken}&fmt=json&limit=3`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    let data = await response.json();
+                    data.reverse();
+
+                    if (data && data.length >= 3) {
+                        const latestClose = parseFloat(data[0].close).toFixed(2);
+                        const previousClose = parseFloat(data[1].close).toFixed(2);
+                        const prePreviousClose = parseFloat(data[2].close).toFixed(2);
+                        const latestDate = data[0].date;
+
+                        sumLatest += parseFloat(latestClose);
+                        sumPrevious += parseFloat(previousClose);
+                        sumPrePrevious += parseFloat(prePreviousClose);
+                        count++;
+
+                        const row = document.createElement('tr');
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = stockSymbol;
+
+                        const latestCloseCell = document.createElement('td');
+                        latestCloseCell.textContent = latestClose;
+
+                        const previousCloseCell = document.createElement('td');
+                        previousCloseCell.textContent = previousClose;
+
+                        const prePreviousCloseCell = document.createElement('td');
+                        prePreviousCloseCell.textContent = prePreviousClose;
+
+                        const latestDateCell = document.createElement('td');
+                        latestDateCell.textContent = latestDate;
+
+                        row.appendChild(nameCell);
+                        row.appendChild(latestCloseCell);
+                        row.appendChild(previousCloseCell);
+                        row.appendChild(prePreviousCloseCell);
+                        row.appendChild(latestDateCell);
+                        tableBody.appendChild(row);
+                    } else {
+                        console.log(`No data available for ${stockSymbol}`);
+                    }
+                } catch (error) {
+                    console.error(`An error occurred for ${stockSymbol}:`, error);
+                }
+            }
+
+            // ... (Rest des Codes bleibt unverändert)
+
+if (count > 0) {
+    const avgLatest = (sumLatest / count).toFixed(2);
+    const avgPrevious = (sumPrevious / count).toFixed(2);
+    const avgPrePrevious = (sumPrePrevious / count).toFixed(2);
+
+    document.getElementById('big5FundLatest').textContent = avgLatest;
+    document.getElementById('big5FundPrevious').textContent = avgPrevious;
+    document.getElementById('big5FundPrePrevious').textContent = avgPrePrevious;
+
+    // Übertrage diese Werte zu den Input-Feldern im Chart
+    updateChartInputs(avgLatest, avgPrevious, avgPrePrevious);
+}
+
+// ...
+
+function updateChartInputs(latest, previous, prePrevious) {
+    document.getElementById('closeA').value = latest;
+    document.getElementById('closeB').value = previous;
+    document.getElementById('closeC').value = prePrevious;
+}
+        }
+    </script>
+</body>
+</html>
+// LINIENCHART
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Chart</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        
+        function drawChart() {
+            const closeC = parseFloat(document.getElementById("closeC").value);
+            const closeB = parseFloat(document.getElementById("closeB").value);
+            const closeA = parseFloat(document.getElementById("closeA").value);
+
+            var data = google.visualization.arrayToDataTable([
+                ['Close', 'Price', { role: 'style' }],
+                ['Close C', closeC, 'black'],
+                ['Close B', closeB, 'black'],
+                ['Close A', closeA, 'black']
+            ]);
+
+            var options = {
+                title: 'Closing Prices',
+                legend: { position: 'bottom' },
+                hAxis: {
+                    title: 'Close'
+                },
+                vAxis: {
+                    title: 'Price'
+                }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+    <h2>Enter Closing Prices</h2>
+    <table>
+        <tr>
+            <td>Close 3 day ago:</td>
+            <td><input type="number" id="closeC" value="100"></td>
+        </tr>
+        <tr>
+            <td>Close Yesterrday:</td>
+            <td><input type="number" id="closeB" value="105"></td>
+        </tr>
+        <tr>
+            <td>Close Today:</td>
+            <td><input type="number" id="closeA" value="103"></td>
+        </tr>
+    </table>
+    <button onclick="drawChart()">Draw Chart</button>
+    <div id="chart_div" style="width: 600px; height: 400px;"></div>
+</body>
+</html>
