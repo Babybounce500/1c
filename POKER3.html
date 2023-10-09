@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zufallspokersystem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+
+    <!-- Benutzerdefinierte Styles -->
+    <style>
+        /* Allgemeine Einstellungen */
+        body {
+            background-color: #184d18;  /* Grüner Hintergrund */
+            color: gold;  /* Goldener Text für ein luxuriöses Gefühl */
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        /* Container */
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);  /* Halbtransparenter Hintergrund */
+            padding: 2rem;
+            border-radius: 15px;
+        }
+
+        /* Überschriften */
+        h2, h3 {
+            font-family: 'Playfair Display', serif;
+            border-bottom: 2px solid gold;
+            padding-bottom: 10px;
+        }
+
+        /* Tabelle */
+        table {
+            width: 100%;
+            margin-top: 1rem;
+            margin-left: 0;  /* Links ausrichten */
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: center;
+            padding: 0.5rem;
+            border: 1px solid gold;
+        }
+
+        /* Buttons */
+        input[type="button"] {
+            background-color: #28a745;
+            color: gold;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Maximaler Einsatz und Entscheidung */
+        #maxBet, #decision {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>AI COIN TOSS POKER SYSTEM <br>Texas Hold em Limit Poker</h2>
+
+<h3>Insert Bankrol:</h3>
+<form name="pokerForm">
+    <input type="number" id="bankroll" placeholder="Bankroll"><br><br>
+    <input type="button" value="Berechne maximalen Einsatz" onclick="calculateMaxBet()">
+</form>
+
+<h3>Max. Bet per hand:</h3>
+<p id="maxBet"></p>
+
+<h3>Decision:</h3>
+<p id="decision"></p>
+
+<input type="button" value="Entscheiden" onclick="makeDecision()">
+
+<h3>Last 10 Decisions: Last is first:</h3>
+<table border="1" id="decisionHistory">
+    <thead>
+        <tr>
+            <th>Entscheidung</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Die Entscheidungen werden hier angezeigt -->
+    </tbody>
+</table>
+
+<script>
+    let decisionHistory = [];
+
+    function calculateMaxBet() {
+        let bankroll = parseFloat(document.getElementById("bankroll").value);
+        if (isNaN(bankroll) || bankroll <= 0) {
+            alert("Bitte geben Sie eine gültige Bankroll ein.");
+            return;
+        }
+        let maxBet = bankroll * 0.01;
+        document.getElementById("maxBet").innerText = maxBet.toFixed(2);
+    }
+
+    function makeDecision() {
+        let decision = Math.random() > 0.5 ? "HOLD" : "FOLD";
+        document.getElementById("decision").innerText = decision;
+
+        // Entscheidung zur Historie hinzufügen und die letzten 10 Entscheidungen behalten
+        decisionHistory.unshift(decision);
+        if (decisionHistory.length > 10) {
+            decisionHistory.pop();
+        }
+
+        // Tabelle aktualisieren
+        let tbody = document.querySelector("#decisionHistory tbody");
+        tbody.innerHTML = decisionHistory.map(d => `<tr><td>${d}</td></tr>`).join("");
+    }
+</script>
+
+</body>
+</html>
+Erklärung: Wenn Ergebnis FOLD = dann direkt FOLD auch bei Big bling und small blind 
+<br> Wenn Ergebnis HOLD = immer maximal betrag pro runde setzen.Karten bis zum Schluss halten. nsgesagt 1 % der bankroll Einsatz für die jewweilige Hand. 
+<br>letzt Entscheidung steht immer ganz oben in der tabelle
