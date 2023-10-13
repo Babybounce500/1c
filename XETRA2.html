@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Auktionsverfahren
+  </title>
+  
+ </head>
+ <body>
+  
+  <h2>
+   Verkaufsorders (Asks)
+  </h2>
+  <div>
+   <label>
+    ID:
+    <input id="askID" type="text"/>
+   </label>
+   <label>
+    Preis:
+    <input id="askPrice" type="number"/>
+   </label>
+   <label>
+    Volumen:
+    <input id="askVolume" type="number"/>
+   </label>
+   <label>
+    Datum &amp; Uhrzeit:
+    <input id="askDateTime" type="datetime-local"/>
+   </label>
+   <select id="askType">
+    <option value="limit">
+     Limit Order
+    </option>
+    <option value="market">
+     Market Order
+    </option>
+   </select>
+   <button onclick="addAsk()">
+    Verkaufsorder hinzufügen
+   </button>
+  </div>
+  <ul id="asksList">
+  </ul>
+  <h1>
+    Auktionsverfahren zur Preisermittlung
+   </h1>
+   <div>
+    <label>
+     Referenzkurs:
+     <input id="referencePrice" type="number"/>
+    </label>
+   </div>
+   <h2>
+    Kauforders (Bids)
+   </h2>
+   <div>
+    <label>
+     ID:
+     <input id="bidID" type="text"/>
+    </label>
+    <label>
+     Preis:
+     <input id="bidPrice" type="number"/>
+    </label>
+    <label>
+     Volumen:
+     <input id="bidVolume" type="number"/>
+    </label>
+    <label>
+     Datum &amp; Uhrzeit:
+     <input id="bidDateTime" type="datetime-local"/>
+    </label>
+    <select id="bidType">
+     <option value="limit">
+      Limit Order
+     </option>
+     <option value="market">
+      Market Order
+     </option>
+    </select>
+    <button onclick="addBid()">
+     Kauforder hinzufügen
+    </button>
+   </div>
+   <ul id="bidsList">
+   </ul>
+  <button onclick="calculateClearingPrice()">
+   Clearing-Preis und gehandelte Stückzahl berechnen
+  </button>
+  <p>
+   Clearing-Preis:
+   <span id="result">
+    -
+   </span>
+  </p>
+  <p>
+   Gehandelte Stückzahl:
+   <span id="tradedVolume">
+    -
+   </span>
+  </p>
+  <script>
+  let bids = [];
+let asks = [];
+
+function addBid() {
+    const id = document.getElementById('bidID').value;
+    const price = parseFloat(document.getElementById('bidPrice').value);
+    const volume = parseFloat(document.getElementById('bidVolume').value);
+    const datetime = new Date(document.getElementById('bidDateTime').value);
+    const type = document.getElementById('bidType').value;
+    bids.push({id, price, volume, datetime, type});
+    updateList('bidsList', bids);
+}
+
+function addAsk() {
+    const id = document.getElementById('askID').value;
+    const price = parseFloat(document.getElementById('askPrice').value);
+    const volume = parseFloat(document.getElementById('askVolume').value);
+    const datetime = new Date(document.getElementById('askDateTime').value);
+    const type = document.getElementById('askType').value;
+    asks.push({id, price, volume, datetime, type});
+    updateList('asksList', asks);
+}
+
+function updateList(elementId, orders) {
+    const listElement = document.getElementById(elementId);
+    listElement.innerHTML = '';
+    orders.forEach(order => {
+        listElement.innerHTML += `<li>${order.type.toUpperCase()}: ID ${order.id}, Preis ${order.price}, Volumen ${order.volume}, Datum & Uhrzeit ${order.datetime.toLocaleString()}</li>`;
+    });
+}
+
+function calculateClearingPrice() {
+    const result = combinedClearingPriceCorrected(bids, asks);
+    document.getElementById('result').innerText = result.clearingPrice;
+    document.getElementById('tradedVolume').innerText = result.tradedVolume;
+    updateList('bidsList', bids);
+    updateList('asksList', asks);
+}
+
+function combinedClearingPriceCorrected(bids, asks) {
+    bids.sort((a, b) => (a.type === 'limit' ? a.price : -Infinity) - (b.type === 'limit' ? b.price : -Infinity));
+    asks.sort((a, b) => (a.type === 'limit' ? a.price : Infinity) - (b.type === 'limit' ? b.price : Infinity));
+
+    let tradedVolume = 0;
+    let lastTradePrice = null;
+
+    while (bids.length > 0 && asks.length > 0) {
+        let bid = bids[0];
+        let ask = asks[0];
+
+        if (bid.type === 'market' && ask.type === 'market') {
+            lastTradePrice = parseFloat(document.getElementById('referencePrice').value);
+        } else if (bid.type === 'market' || ask.type === 'market' || bid.price >= ask.price) {
+            lastTradePrice = bid.type === 'market' ? ask.price : ask.type === 'market' ? bid.price : bid.price;
+        } else {
+            break;
+        }
+
+        let volumeToTrade = Math.min(bid.volume, ask.volume);
+        tradedVolume += volumeToTrade;
+
+        bid.volume -= volumeToTrade;
+        ask.volume -= volumeToTrade;
+
+        if (bid.volume === 0) bids.shift();
+        if (ask.volume === 0) asks.shift();
+    }
+
+    return {clearingPrice: lastTradePrice, tradedVolume};
+}
+
+  </script>
+ </body>
+</html>

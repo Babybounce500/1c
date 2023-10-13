@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Xetra Auktionsverfahren mit MM Logik</title>
+</head>
+<body>
+
+<h1>Xetra Auktionsverfahren</h1>
+
+<div>
+    <label>Referenzkurs: <input id="referencePrice" type="number" onchange="autoFillOrders()"></label>
+</div>
+
+<h2>Manuelle Verkaufsorders (Asks)</h2>
+<div>
+    <label>ID: <input id="askID" type="text"></label>
+    <label>Preis: <input id="askPrice" type="number"></label>
+    <label>Volumen: <input id="askVolume" type="number"></label>
+    <select id="askType">
+        <option value="limit">Limit Order</option>
+        <option value="market">Market Order</option>
+    </select>
+    <button onclick="addAsk()">Verkaufsorder hinzufügen</button>
+</div>
+
+<h2>Verkaufsorders (Asks)</h2>
+<ul id="asksList">
+</ul>
+
+<h2>Manuelle Kauforders (Bids)</h2>
+<div>
+    <label>ID: <input id="bidID" type="text"></label>
+    <label>Preis: <input id="bidPrice" type="number"></label>
+    <label>Volumen: <input id="bidVolume" type="number"></label>
+    <select id="bidType">
+        <option value="limit">Limit Order</option>
+        <option value="market">Market Order</option>
+    </select>
+    <button onclick="addBid()">Kauforder hinzufügen</button>
+</div>
+
+<h2>Kauforders (Bids)</h2>
+<ul id="bidsList">
+</ul>
+
+<button onclick="calculateClearingPrice()">
+   Clearing-Preis und gehandelte Stückzahl berechnen
+</button>
+<p>
+   Clearing-Preis: <span id="result">-</span>
+</p>
+<p>
+   Gehandelte Stückzahl: <span id="tradedVolume">-</span>
+</p>
+
+<script>
+let bids = [];
+let asks = [];
+
+
+  function autoFillOrders() {
+    let referenzpreis = parseFloat(document.getElementById('referencePrice').value);
+    const volumeIncrements = 100;
+    for (let i = 1; i <= 3; i++) {
+        const percentage = i * 0.02;
+        const bidPrice = (referenzpreis - (percentage * referenzpreis)).toFixed(2);
+        const askPrice = (referenzpreis + (percentage * referenzpreis)).toFixed(2);
+        const datetime = new Date().toISOString();
+        const volume = volumeIncrements * i;
+        bids.push({ id: 'BOSS', price: parseFloat(bidPrice), volume, datetime, type: 'limit' });
+        asks.push({ id: 'BOSS', price: parseFloat(askPrice), volume, datetime, type: 'limit' });
+    }
+    updateList('bidsList', bids);
+    updateList('asksList', asks);
+}
+
+
+function addBid() {
+    const id = document.getElementById('bidID').value;
+    const price = parseFloat(document.getElementById('bidPrice').value);
+    const volume = parseFloat(document.getElementById('bidVolume').value);
+    const type = document.getElementById('bidType').value;
+    const datetime = new Date().toISOString();
+    bids.push({id, price, volume, datetime, type});
+    updateList('bidsList', bids);
+}
+
+function addAsk() {
+    const id = document.getElementById('askID').value;
+    const price = parseFloat(document.getElementById('askPrice').value);
+    const volume = parseFloat(document.getElementById('askVolume').value);
+    const type = document.getElementById('askType').value;
+    const datetime = new Date().toISOString();
+    asks.push({id, price, volume, datetime, type});
+    updateList('asksList', asks);
+}
+
+function updateList(elementId, orders) {
+    const listElement = document.getElementById(elementId);
+    listElement.innerHTML = '';
+    orders.forEach(order => {
+        listElement.innerHTML += `<li>${order.type.toUpperCase()}: ID ${order.id}, Preis ${order.price}, Volumen ${order.volume}, Datum & Uhrzeit ${new Date(order.datetime).toLocaleString()}</li>`;
+    });
+}
+bids = bids.filter(b => b.type !== "market" || b.volume > 0);
+    asks = asks.filter(a => a.type !== "market" || a.volume > 0);
+    function calculateClearingPrice() {
+    // Sort bids and asks
+    let sortedBids = [...bids].sort((a, b) => b.price - a.price);
+    let sortedAsks = [...asks].sort((a, b) => a.price - b.price);
+
+    let tradedVolume = 0;
+    let clearingPrice = null;
+
+    // First, match market orders against each other
+    let marketBidVolume = sortedBids.filter(b => b.type === "market").reduce((acc, b) => acc + b.volume, 0);
+    let marketAskVolume = sortedAsks.filter(a => a.type === "market").reduce((acc, a) => acc + a.volume, 0);
+
+    tradedVolume = Math.min(marketBidVolume, marketAskVolume);
+    let remainingMarketBidVolume = marketBidVolume - tradedVolume;
+    let remainingMarketAskVolume = marketAskVolume - tradedVolume;
+
+    // Remove completed market orders
+    bids = bids.filter(b => b.type !== "market" || b.volume > remainingMarketBidVolume);
+    asks = asks.filter(a => a.type !== "market" || a.volume > remainingMarketAskVolume);
+
+    // Try to match remaining market orders against limit orders
+    for (let i = 0; i < sortedBids.length; i++) {
+        let bid = sortedBids[i];
+        if (remainingMarketAskVolume <= 0) {
+            break;
+        }
+        if (bid.type === "limit") {
+            let volumeToTrade = Math.min(bid.volume, remainingMarketAskVolume);
+            tradedVolume += volumeToTrade;
+            remainingMarketAskVolume -= volumeToTrade;
+            clearingPrice = bid.price;
+
+            // Reduce volume and remove if zero
+            bid.volume -= volumeToTrade;
+            if (bid.volume === 0) {
+                bids = bids.filter(b => b.id !== bid.id || b.datetime !== bid.datetime);
+            }
+        }
+    }
+
+    for (let i = 0; i < sortedAsks.length; i++) {
+        let ask = sortedAsks[i];
+        if (remainingMarketBidVolume <= 0) {
+            break;
+        }
+        if (ask.type === "limit") {
+            let volumeToTrade = Math.min(ask.volume, remainingMarketBidVolume);
+            tradedVolume += volumeToTrade;
+            remainingMarketBidVolume -= volumeToTrade;
+            clearingPrice = ask.price;
+
+            // Reduce volume and remove if zero
+            ask.volume -= volumeToTrade;
+            if (ask.volume === 0) {
+                asks = asks.filter(a => a.id !== ask.id || a.datetime !== ask.datetime);
+            }
+        }
+    }
+
+    // If we still didn't find a clearing price, then there's no match
+    if (clearingPrice === null) {
+        clearingPrice = "No Match";
+        tradedVolume = 0;
+    }
+
+    // Update the DOM
+    document.getElementById("result").innerText = clearingPrice;
+    document.getElementById("tradedVolume").innerText = tradedVolume;
+
+    // Update the lists
+    updateList('bidsList', bids);
+    updateList('asksList', asks);
+}
+ </script>
+
+</body>
+</html>

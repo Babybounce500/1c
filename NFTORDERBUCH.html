@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NFT Auktion</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="#">NFT Auktion</a>
+</nav>
+
+<div class="container mt-5">
+    <h1>NFT Auktion</h1>
+    <!-- Auktionsdetails festlegen -->
+    <h2>Auktionsdetails festlegen</h2>
+    <div>
+        <label for="startPrice">Startpreis (ETH):</label>
+        <input id="startPrice" type="number" value="0.1" class="form-control"/>
+        <label for="reservePrice">Mindestpreis (ETH):</label>
+        <input id="reservePrice" type="number" value="1" class="form-control"/>
+        <label for="auctionEndTime">Auktionsschluss (Datum & Uhrzeit):</label>
+        <input id="auctionEndTime" type="datetime-local" class="form-control"/>
+        <button onclick="startAuction()" class="btn btn-primary mt-3">Auktion starten</button>
+    </div>
+    <!-- Bieten -->
+    <h2>Bieten</h2>
+    <div id="biddingSection" style="display: none;">
+        <label for="bidderID">ID:</label>
+        <input id="bidderID" type="text" class="form-control"/>
+        <label for="userBid">Ihr Gebot (ETH):</label>
+        <input id="userBid" type="number" class="form-control"/>
+        <label for="bidDateTime">Datum & Uhrzeit:</label>
+        <input id="bidDateTime" type="datetime-local" class="form-control"/>
+        <button onclick="placeBid()" class="btn btn-primary mt-3">Gebot abgeben</button>
+    </div>
+    <!-- Orderbuch für Gebote -->
+    <h2>Orderbuch</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Gebot (ETH)</th>
+            <th>Datum & Uhrzeit</th>
+        </tr>
+        </thead>
+        <tbody id="bidsTable">
+        <!-- Gebote werden hier angezeigt -->
+        </tbody>
+    </table>
+    <!-- Ende der Auktion und Ergebnis -->
+    <h2>Auktionsergebnis</h2>
+    <p id="auctionResult"></p>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    let bids = [];
+    let reservePrice = 0;
+    let auctionEndTime;
+
+    function startAuction() {
+        reservePrice = parseFloat(document.getElementById('reservePrice').value);
+        auctionEndTime = new Date(document.getElementById('auctionEndTime').value);
+        document.getElementById('biddingSection').style.display = 'block';
+
+        // Timer, um die Auktion automatisch zu beenden
+        setTimeout(() => {
+            endAuction();
+        }, auctionEndTime - new Date());
+    }
+
+    function placeBid() {
+        const userBid = parseFloat(document.getElementById('userBid').value);
+        const bidderID = document.getElementById('bidderID').value;
+        const bidDateTime = document.getElementById('bidDateTime').value;
+
+        bids.push({
+            id: bidderID,
+            amount: userBid,
+            dateTime: bidDateTime
+        });
+
+        displayBids();
+    }
+
+    function displayBids() {
+        const bidsTable = document.getElementById('bidsTable');
+        bidsTable.innerHTML = "";
+        for (let bid of bids) {
+            bidsTable.innerHTML += `<tr><td>${bid.id}</td><td>${bid.amount}</td><td>${bid.dateTime}</td></tr>`;
+        }
+    }
+
+    function endAuction() {
+        const highestBid = bids.reduce((prev, curr) => curr.amount > prev.amount ? curr : prev, {amount: 0});
+        if (highestBid.amount >= reservePrice) {
+            document.getElementById('auctionResult').innerText = `Das Kunstwerk wurde an Bieter ${highestBid.id} für ${highestBid.amount} ETH verkauft!`;
+        } else {
+            document.getElementById('auctionResult').innerText = `Das Mindestgebot von ${reservePrice} ETH wurde nicht erreicht. Das Kunstwerk wurde nicht verkauft.`;
+        }
+        document.getElementById('biddingSection').style.display = 'none';
+    }
+</script>
+</body>
+</html>

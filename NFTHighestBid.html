@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NFT Auktion</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Hier können Sie Ihr eigenes CSS für das Design hinzufügen */
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="#">NFT Auktion</a>
+</nav>
+
+<div class="container mt-5">
+    <h1>NFT Auktion</h1>
+    <!-- Auktionsdetails festlegen -->
+    <h2>Auktionsdetails festlegen</h2>
+    <div>
+        <label for="startPrice">Startpreis (ETH):</label>
+        <input id="startPrice" type="number" step="0.01" value="0.1" class="form-control"/>
+        <label for="reservePrice">Mindestpreis (ETH):</label>
+        <input id="reservePrice" type="number" step="0.01" value="1" class="form-control"/>
+        <label for="auctionEndTime">Auktionsschluss (Datum & Uhrzeit):</label>
+        <input id="auctionEndTime" type="datetime-local" class="form-control"/>
+        <button onclick="startAuction()" class="btn btn-primary mt-3">Auktion starten</button>
+    </div>
+    <!-- Bieten -->
+    <h2>Bieten</h2>
+    <div id="biddingSection" style="display: none;">
+        <label for="bidderID">ID:</label>
+        <input id="bidderID" type="text" class="form-control"/>
+        <label for="userBid">Ihr Gebot (ETH):</label>
+        <input id="userBid" type="number" step="0.01" class="form-control"/>
+        <label for="bidDateTime">Datum & Uhrzeit:</label>
+        <input id="bidDateTime" type="datetime-local" class="form-control"/>
+        <button onclick="placeBid()" class="btn btn-primary mt-3">Gebot abgeben</button>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Gebot (ETH)</th>
+            <th>Datum & Uhrzeit</th>
+        </tr>
+        </thead>
+        <tbody id="bidsTable">
+        <!-- Gebote werden hier angezeigt -->
+        </tbody>
+    </table>
+    <!-- Ende der Auktion -->
+    <button id="endAuctionButton" onclick="endAuction()" style="display: none;" class="btn btn-primary">Auktion beenden</button>
+    <p id="auctionResult"></p>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    let db;
+    let highestBid = 0;
+    let reservePrice = 0;
+    let auctionEndTime;
+
+    // Datenbank initialisieren
+    const request = indexedDB.open("AuctionDB", 1);
+    request.onerror = function(event) {
+        console.error("Cannot open IndexedDB:", event);
+    };
+    request.onsuccess = function(event) {
+        db = event.target.result;
+        fetchHighestBid();
+    };
+    request.onupgradeneeded = function(event) {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('bids')) {
+            db.createObjectStore('bids', { keyPath: 'id', autoIncrement: true });
+        }
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Löscht das Gebot-Feld beim Laden der Seite
+        document.getElementById('userBid').value = '';
+    });
+
+    function startAuction() {
+        // Löscht das Gebot-Feld
+        document.getElementById('userBid').value = '';
+
+        reservePrice = parseFloat(document.getElementById('reservePrice').value);
+        auctionEndTime = new Date(document.getElementById('auctionEndTime').value);
+        document.getElementById('biddingSection').style.display = 'block';
+        document.getElementById('endAuctionButton').style.display = 'block';
+
+        // Timer, um die Auktion automatisch zu beenden
+        const now = new Date();
+        const timeRemaining = auctionEndTime - now;
+        if (timeRemaining <= 0) {
+            endAuction();
+        } else {
+            setTimeout(() => {
+                endAuction();
+            }, timeRemaining);
+        }
+    }
+
+    function placeBid() {
+        const userBid = parseFloat(document.getElementById('userBid').value);
+        const bidderID = document.getElementById('bidderID').value;
+        const bidDateTime = new Date(document.getElementById('bidDateTime').value);
+
+        if (isNaN(userBid) || userBid <= 0) {
+            alert('Ihr Gebot muss eine gültige positive Zahl sein.');
+            return;
+        }
+
+        if (userBid <= highestBid) {
+            alert('Ihr Gebot muss höher sein als das aktuelle Höchstgebot.');
+            return;
+        }
+
+        highestBid = userBid;
+        // Gebot in der Datenbank speichern
+        const bid = {
+            amount: highestBid,
+            bidderID: bidderID,
+            dateTime: bidDateTime
+        };
+        const transaction = db.transaction(["bids"], "readwrite");
+        const objectStore = transaction.objectStore("bids");
+        objectStore.add(bid);
+        fetchHighestBid();
+    }
+
+    function fetchHighestBid() {
+        const transaction = db.transaction(["bids"], "readonly");
+        const objectStore = transaction.objectStore("bids");
+        const request = objectStore.getAll();
+        request.onsuccess = function(event) {
+            const bids = event.target.result;
+            if (bids.length > 0) {
+                const highestBidEntry = bids.reduce((prev, curr) => curr.amount > prev.amount ? curr : prev);
+                document.getElementById('bidsTable').innerHTML = `<tr><td>${highestBidEntry.bidderID}</td><td>${highestBidEntry.amount}</td><td>${highestBidEntry.dateTime}</td></tr>`;
+            }
+        };
+    }
+
+    function endAuction() {
+        const now = new Date();
+
+        if (now > auctionEndTime) {
+            const transaction = db.transaction(["bids"], "readonly");
+            const objectStore = transaction.objectStore("bids");
+            const request = objectStore.getAll();
+            request.onsuccess = function(event) {
+                const bids = event.target.result;
+
+                if (bids.length > 0) {
+                    const highestBidEntry = bids.reduce((prev, curr) => curr.amount > prev.amount ? curr : prev);
+
+                    if (highestBidEntry.amount >= reservePrice) {
+                        document.getElementById('auctionResult').innerText = `Das Kunstwerk wurde für ${highestBidEntry.amount} ETH verkauft!`;
+                    } else {
+                        document.getElementById('auctionResult').innerText = `Das Mindestgebot von ${reservePrice} ETH wurde nicht erreicht. Das Kunstwerk wurde nicht verkauft.`;
+                    }
+
+                    document.getElementById('biddingSection').style.display = 'none';
+                    document.getElementById('endAuctionButton').style.display = 'none';
+                } else {
+                    document.getElementById('auctionResult').innerText = `Keine Gebote abgegeben. Das Kunstwerk wurde nicht verkauft.`;
+                    document.getElementById('biddingSection').style.display = 'none';
+                    document.getElementById('endAuctionButton').style.display = 'none';
+                }
+
+                // Lösche die Gebote aus der Datenbank
+                const deleteTransaction = db.transaction(["bids"], "readwrite");
+                const deleteObjectStore = deleteTransaction.objectStore("bids");
+                deleteObjectStore.clear();
+            };
+        } else {
+            alert('Die Auktion läuft noch. Bitte warten Sie bis zum Auktionsende.');
+        }
+    }
+</script>
+</body>
+</html>
