@@ -1,0 +1,75 @@
+
+Command: 3d
+Parameters: Stock symbol
+Description: Displays a 3-day chart for the specified stock symbol.
+Example Usage: 3d AAPL.US
+
+Command: !
+Parameters: Comma-separated symbols
+Description: Performs Momentum analysis on a daily basis for the specified stock symbols.
+Example Usage: !aapl,nke
+
+Command: #
+Parameters: Comma-separated symbols
+Description: Conducts volume analysis on a daily basis for the specified stock symbols.
+Example Usage: #aapl
+
+Command: $
+Parameters: Comma-separated symbols
+Description: Performs Slim Body candlestick analysis on a daily basis for the specified stock symbols.
+Example Usage: $aapl.us
+
+Command: +
+Parameters: Account balance, Risk per trade
+Description: Calculates the position size based on the given account balance and risk per trade.
+Example Usage: +5000 0.5
+
+Command: -
+Parameters: Comma-separated symbols
+Description: Retrieves hedging levels for the specified stock symbols ranging from intraday to monthly basis.
+Example Usage: -aapl
+
+Command: ?
+Parameters: Current Price, Entry Price, Account Balance
+Description: Calculates new position size based on current price, entry price, and account balance for trade management.
+Example Usage: ?179 170 50000
+
+Command: §
+Parameters: Comma-separated symbols
+Description: Performs weekly analysis for the specified stock symbols using the Consultus method.
+Example Usage: §aapl
+
+Command: %
+Parameters: Comma-separated symbols
+Description: Performs monthly trend analysis for the specified stock symbols using the MENSIS method.
+Example Usage: %aapl
+
+Command: (
+Parameters: Comma-separated symbols
+Description: Retrieves options-related information for the specified stock symbols.
+Example Usage: (aapl
+
+Command: /
+Parameters: Comma-separated symbols
+Description: Performs 3-day SMA analysis and identifies roof/basement levels on a daily basis for the specified stock symbols.
+Example Usage: /aapl
+
+Command: <
+Parameters: Comma-separated symbols
+Description: Performs Denarius 3-day spread analysis for the specified stock symbols.
+Example Usage: < aapl,podd,lly
+
+Command: &
+Parameters: Comma-separated symbols
+Description: Executes all available analyses for the specified stock symbols.
+Example Usage: &aapl
+
+Command: .
+Parameters: None
+Description: Executes a function for making a decision based on current data (specific functionality to be defined).
+Example Usage: .
+
+Command: @
+Parameters: None
+Description: Retrieves real-time information for various AI-based funds.
+Example Usage: @
