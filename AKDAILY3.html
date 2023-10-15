@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Anfrage für Aktienkurse</title>
+<style>
+body {
+    background-color: #251532; /* Hintergrundfarbe */
+    color: white; /* Textfarbe */
+    font-family: Arial, sans-serif; /* Schriftart */
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+
+        /* Add your CSS styling here */
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+    
+/* Dark theme styles */
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+#kursA, #kursB, #kursC, #Aktienname, #aktienname {
+  display: none;
+}
+button {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.chat-window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Mobile Responsive styles */
+@media only screen and (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Banking Style for Input Fields */
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Banking Style for Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 3px solid #333;
+    text-align: left;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Banking Style for Containers */
+.container {
+    background-color: #1e1e1e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Responsive Table Styles for Mobile Devices */
+@media screen and (max-width: 768px) {
+    table {
+        width: auto;
+    }
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+
+/* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+</style>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+
+<h1>CONSULTUS APP Daily</h1>
+
+<!-- Input for Stock Symbol for daily analysis -->
+<<label for="stockSymbolDaily">Stock symbol</label>
+<input type="text" id="stockSymbolDaily" placeholder="AAPL,PODD,LLY (Täglich)">
+<button onclick="fetchMultipleSymbols()">Check Trade</button>
+
+
+<!-- Additional Fields for analysis -->
+<label for="aktienname"></label>
+<input id="aktienname" type="text"><br/>
+
+<input type="text" id="kursA" placeholder="Kurs A">
+<input type="text" id="kursB" placeholder="Kurs B">
+<input type="text" id="kursC" placeholder="Kurs C">
+<div id="result"></div>
+
+<!-- Additional Fields for Kontostand -->
+<label for="kontostand">Account balance</label>
+<input id="kontostand" type="text"><br/>
+<label for="kursrisiko">Risk</label>
+<input id="kursrisiko" type="text"><br/>
+<button onclick="calculatePositionSize()">Quantity</button>
+
+<p>Account balance: <span id="aktuellKontostand"></span></p>
+<p>Quantity: <span id="stückzahl"></span></p>
+
+<!-- Result Table -->
+<table id="ergebnisTable">
+  <tr>
+    <th>Name</th>
+    <th>LONG</th>
+    <th>SHORT</th>
+    <th>Risk</th>
+    <th>Quantity</th>
+    <th>Date</th>
+    
+  </tr>
+</table>
+
+<script>
+let lastCloseDate = null;
+
+function fetchMultipleSymbols() {
+  const stockSymbols = document.getElementById('stockSymbolDaily').value.toUpperCase().split(',');
+  stockSymbols.forEach(symbol => performDailyApiRequest(symbol.trim()));
+}
+
+function performDailyApiRequest(stockSymbol) {
+  const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol}?api_token=64d7d0670ee1f8.90133693&fmt=json&limit=3`;
+
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+      const reversedData = data.reverse();
+      if (reversedData.length >= 3) {
+        const kursA = reversedData[0].close.toFixed(2);
+        const kursB = reversedData[1].close.toFixed(2);
+        const kursC = reversedData[2].close.toFixed(2);
+
+        lastCloseDate = reversedData[0].date;
+
+        document.getElementById("kursA").value = kursA;
+        document.getElementById("kursB").value = kursB;
+        document.getElementById("kursC").value = kursC;
+        document.getElementById("aktienname").value = stockSymbol;
+
+        analyzeDailyStocks();
+      }
+    })
+    .catch(error => {
+      console.error('There was an error fetching the daily data:', error);
+    });
+}
+
+
+
+// Rest of your JavaScript code for analysis and calculating position size remains the same.
+
+
+
+
+
+
+
+
+
+
+function analyzeDailyStocks() {
+  const aktienname = document.getElementById("aktienname").value;
+  const kursA = parseFloat(document.getElementById("kursA").value);
+  const kursB = parseFloat(document.getElementById("kursB").value);
+  const kursC = parseFloat(document.getElementById("kursC").value);
+
+  const diffAB = Math.abs(kursA - kursB);
+  const diffCB = Math.abs(kursC - kursB);
+  const result = (diffAB < diffCB) ? 'GO' : 'NO';
+
+  const row = document.getElementById("ergebnisTable").insertRow(-1);
+  row.insertCell(0).innerHTML = aktienname;
+
+  if (result === 'NO') {
+    row.insertCell(1).innerHTML = "NO";
+  } else {
+    const LONG = Math.max(kursA, kursB, kursC);
+    const SHORT = Math.min(kursA, kursB, kursC);
+    const Kursrisiko = Math.abs(LONG - SHORT).toFixed(2);
+
+    document.getElementById("kursrisiko").value = Kursrisiko;
+
+    row.insertCell(1).innerHTML = LONG;
+    row.insertCell(2).innerHTML = SHORT;
+    row.insertCell(3).innerHTML = Kursrisiko;
+    row.insertCell(4).setAttribute("data-open", "true");
+    row.insertCell(5).innerHTML = lastCloseDate;
+  }
+}
+function calculatePositionSize() {
+  // Kommas durch Punkte ersetzen und zu Float konvertieren
+  var kontostand = parseFloat(document.getElementById("kontostand").value.replace(",", "."));
+  var kursrisiko = parseFloat(document.getElementById("kursrisiko").value.replace(",", "."));
+
+  // Prozentsatz von 1% des Kontostands
+  var prozentsatz = 1;
+
+  // Überprüfen, ob kontostand und kursrisiko gültige Werte sind
+  if (isNaN(kontostand) || isNaN(kursrisiko)) {
+    document.getElementById("stückzahl").innerHTML = "Ungültige Eingabe";
+    document.getElementById("aktuellKontostand").innerHTML = "Ungültige Eingabe";
+    return;
+  }
+
+  // Berechne die Stückzahl und runde sie ab
+  var stückzahl = Math.floor((kontostand * prozentsatz / 100) / kursrisiko);
+
+  // Zeige die Ergebnisse an
+  document.getElementById("stückzahl").innerHTML = stückzahl;
+  document.getElementById("aktuellKontostand").innerHTML = kontostand.toFixed(2);
+
+  // Aktualisiere die Tabelle, falls die "Stückzahl"-Zelle als "offen" markiert ist
+  var stückzahlCell = document.querySelector("[data-open='true']");
+  if (stückzahlCell) {
+    stückzahlCell.innerHTML = stückzahl;
+    stückzahlCell.removeAttribute("data-open");
+  }
+}
+// Die Funktion calculatePositionSize() bleibt unverändert
+
+</script>
+
+</body>
+</html>
