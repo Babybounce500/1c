@@ -194,11 +194,11 @@ button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type
 </head>
 <body>
 
-    <h1>MOMENTUM.AI Intraday</h1>
+    <h1>Stock Information</h1>
 
-    <label for="stockSymbol"> </label>
-    <input type="text" id="ticker" placeholder="AAPL,LLY,PODD">
-    <button onclick="fetchStockData()">Check Trade</button>
+    <label for="stockSymbol">Enter Stock Symbols (comma separated): </label>
+    <input type="text" id="stockSymbol">
+    <button onclick="fetchStockData()">Fetch Data</button>
 
     <div id="stockInfoContainer">
         <!-- Stock info will be inserted here -->
@@ -224,12 +224,11 @@ button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type
     </head>
     <body>
     <h1>QUANTITY</h1>
-    <label for="kontostand">Account balance:</label>
-    <input id="kontostand" placeholder="50000" type="text"/><br/>
-    <label for="kursrisiko">Risk in points:</label>
-    <input id="kursrisiko" placeholder="2.5" type="text"/><br/>
-    <button onclick="calculatePositionSize()">Calculate</button>
-    <p>Quantity: <span id="stückzahl"></span></p>
+    <label for="kontostand">Kontostand:</label>
+    <input id="kontostand" type="text"/><br/>
+    <label for="kursrisiko">Kursrisiko:</label>
+    <input id="kursrisiko" type="text"/><br/>
+    <button onclick="calculatePositionSize()">Berechnen</button>
+    <p>Positionsgröße (Stückzahl): <span id="stückzahl"></span></p>
     </body>
-    
-</html>
+    </html>
