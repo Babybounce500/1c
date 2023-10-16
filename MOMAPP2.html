@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Anfrage für Aktienkurse</title>
+<style>
+body {
+    background-color: #251532; /* Hintergrundfarbe */
+    color: white; /* Textfarbe */
+    font-family: Arial, sans-serif; /* Schriftart */
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+
+        /* Add your CSS styling here */
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+    
+/* Dark theme styles */
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+button {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.chat-window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Mobile Responsive styles */
+@media only screen and (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Banking Style for Input Fields */
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Banking Style for Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 3px solid #333;
+    text-align: left;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Banking Style for Containers */
+.container {
+    background-color: #1e1e1e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Responsive Table Styles for Mobile Devices */
+@media screen and (max-width: 768px) {
+    table {
+        width: auto;
+    }
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+
+/* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+</style>
+    <script>
+        // Function to convert Unix timestamp to human-readable date and time
+        function convertTimestamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleDateString('de-DE') + ' ' + date.toLocaleTimeString('de-DE');
+        }
+
+        async function getStockInfo(stockSymbol) {
+            const apiKey = '64d7d0670ee1f8.90133693';
+            const url = `https://eodhistoricaldata.com/api/real-time/${stockSymbol}?fmt=json&api_token=${apiKey}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const highestPrice = data.high;
+                const lowestPrice = data.low;
+                const realtimePrice = data.close;
+                const averagePrice = (highestPrice + lowestPrice) / 2;
+                const range = highestPrice - lowestPrice;
+                const longEntry = (realtimePrice + 0.5 * range).toFixed(2);
+                const shortEntry = (realtimePrice - 0.5 * range).toFixed(2);
+                const pyramideLong = (realtimePrice + parseFloat(range.toFixed(2))).toFixed(2);
+                const pyramideShort = (realtimePrice - parseFloat(range.toFixed(2))).toFixed(2);
+
+                let recommendation = 'Neutral';
+                let trailingStop = '';
+                
+                if (realtimePrice > averagePrice) {
+                    recommendation = 'LONG';
+                    trailingStop = (realtimePrice * 0.99).toFixed(2);
+                } else if (realtimePrice < averagePrice) {
+                    recommendation = 'SHORT';
+                    trailingStop = (realtimePrice * 1.01).toFixed(2);
+                }
+
+                const timestamp = data.timestamp;
+                const convertedTime = convertTimestamp(timestamp);
+
+                const html = `
+                    <h2>MOMENTUM Intraday / Daily for ${stockSymbol}</h2>
+                    <p>STOCK: ${stockSymbol}</p>
+                    <p>REALTIME / ENTRY Price: ${realtimePrice}</p>
+                    <p>TREND: ${recommendation}</p>
+                    <p>TRAILING STOP: ${trailingStop}</p>
+                    <p>RANGE: ${range.toFixed(2)}</p>
+                    <p>LONG Breakout: ${longEntry}</p>
+                    <p>SHORT Breakout: ${shortEntry}</p>
+                    <p>Pyramide LONG: ${pyramideLong}</p>
+                    <p>Pyramide SHORT: ${pyramideShort}</p>
+                    <p>TIME: ${convertedTime}</p>
+                `;
+
+                const container = document.getElementById("stockInfoContainer");
+                container.insertAdjacentHTML('beforeend', html);
+
+            } catch (error) {
+                console.error('Error fetching stock information:', error);
+            }
+        }
+
+        async function fetchStockData() {
+            const stockSymbols = document.getElementById("stockSymbol").value.split(',');
+            const container = document.getElementById("stockInfoContainer");
+            container.innerHTML = '';  // Clear previous stock info
+
+            for (let i = 0; i < stockSymbols.length; i++) {
+                const stockSymbol = stockSymbols[i].trim();  // Remove whitespace
+                await getStockInfo(stockSymbol);
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <h1>MOMENTUM.AI Intraday</h1>
+
+    <label for="stockSymbol"> </label>
+    <input type="text" id="ticker" placeholder="AAPL,LLY,PODD">
+    <button onclick="fetchStockData()">Check Trade</button>
+
+    <div id="stockInfoContainer">
+        <!-- Stock info will be inserted here -->
+    </div>
+
+</body>
+<head>
+    <title>Positionsgröße von Aktien</title>
+    <script>
+        function calculatePositionSize() {
+          // Werte aus den Eingabefeldern auslesen
+          var kontostand = parseFloat(document.getElementById("kontostand").value.replace(",", "."));
+          var kursrisiko = parseFloat(document.getElementById("kursrisiko").value.replace(",", "."));
+    
+          // Positionsgröße (Stückzahl) berechnen
+          var prozentsatz = 1; // 1% des Kontostands
+          var stückzahl = Math.floor((kontostand * prozentsatz / 100) / kursrisiko); // Abrunden auf die nächste ganze Zahl
+    
+          // Ergebnis anzeigen
+          document.getElementById("stückzahl").innerHTML = stückzahl;
+        }
+      </script>
+    </head>
+    <body>
+    <h1>QUANTITY</h1>
+    <label for="kontostand">Account balance:</label>
+    <input id="kontostand" placeholder="50000" type="text"/><br/>
+    <label for="kursrisiko">Risk in points:</label>
+    <input id="kursrisiko" placeholder="2.5" type="text"/><br/>
+    <button onclick="calculatePositionSize()">Calculate</button>
+    <p>Quantity: <span id="stückzahl"></span></p>
+    </body>
+    
+</html>
