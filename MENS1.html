@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Anfrage für Aktienkurse</title>
+    
+
+    <!DOCTYPE html>
+
+    <html lang="de">
+    <head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>API Anfrage für Aktienkurse</title>
+    <style>
+    body {
+        background-color: #251532; /* Hintergrundfarbe */
+        color: white; /* Textfarbe */
+        font-family: Arial, sans-serif; /* Schriftart */
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+    }
+    
+    
+            /* Add your CSS styling here */
+            textarea {
+                width: 100%;
+                height: 600px;
+            }
+        
+    /* Dark theme styles */
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+    
+    textarea {
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+    
+    button {
+        background-color: #333333;
+        color: #ffffff;
+    }
+    
+    .chat-window {
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+    
+    /* Mobile Responsive styles */
+    @media only screen and (max-width: 768px) {
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .chat-window {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+    }
+    
+    /* Banking Style for Input Fields */
+    input[type="text"], input[type="password"], input[type="number"], select {
+        border: 2px solid #333;
+        border-radius: 4px;
+        padding: 12px 16px;
+        font-size: 16px;
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+    
+    /* Banking Style for Tables */
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        border: 3px solid #333;
+        text-align: left;
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #333;
+    }
+    
+    /* Banking Style for Containers */
+    .container {
+        background-color: #1e1e1e;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 20px;
+        color: #ffffff;
+    }
+    
+    /* Responsive Table Styles for Mobile Devices */
+    @media screen and (max-width: 768px) {
+        table {
+            width: auto;
+        }
+        th, td {
+            padding: 8px;
+            font-size: 14px;
+        }
+    }
+    
+    
+    /* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+    
+    button, input[type="button"], input[type="submit"], input[type="reset"] {
+        padding: 20px 40px;
+        font-size: 18px;
+        border-radius: 12px;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+        background-color: #4CAF50;
+        color: white;
+    }
+    </style>
+    <title>Mensis Monthly Analysis</title>
+    <script>
+        function fetchAndAnalyze(stockSymbol7) {
+            const today = new Date();
+            let lastMonth = today.getMonth();
+            const year = (lastMonth === 0) ? today.getFullYear() - 1 : today.getFullYear();
+            lastMonth = (lastMonth === 0) ? 11 : lastMonth - 1;
+    
+            const lastDayLastMonth = new Date(year, lastMonth + 1, 0);
+            while (lastDayLastMonth.getDay() !== 5) {
+                lastDayLastMonth.setDate(lastDayLastMonth.getDate() - 1);
+            }
+    
+            const month = String(lastDayLastMonth.getMonth() + 1).padStart(2, '0');
+            const day = String(lastDayLastMonth.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+    
+            const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol7}?api_token=64d7d0670ee1f8.90133693&fmt=json&from=${formattedDate}&to=${formattedDate}`;
+    
+            fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                data.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const lastMonthClose = data.length ? data[0].close : "N/A";
+    
+                fetch(`https://eodhistoricaldata.com/api/eod/${stockSymbol7}?api_token=64d7d0670ee1f8.90133693&fmt=json&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    data.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    const latestClose = data.length ? data[0].close : "N/A";
+                    const analysisResult = latestClose > lastMonthClose ? "LONG" : "SHORT";
+    
+                    const html = `
+                        <h2>MENSIS Monthly Analysis for ${stockSymbol7}</h2>
+                        <p>Last Month Close (Last Friday): ${lastMonthClose}</p>
+                        <p>Latest Close: ${latestClose}</p>
+                        <p>Analysis: ${analysisResult}</p>
+                    `;
+    
+                    const container = document.getElementById("mensisInfoContainer");
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching Mensis monthly data:', error);
+            });
+        }
+    
+        function fetchMensisData() {
+            const stockSymbols = document.getElementById("stockSymbol7").value.split(',');
+            const container = document.getElementById("mensisInfoContainer");
+            container.innerHTML = '';
+    
+            for (let i = 0; i < stockSymbols.length; i++) {
+                const stockSymbol = stockSymbols[i].trim();
+                fetchAndAnalyze(stockSymbol);
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <h1>MENSIS FILTER MOBILE</h1>
+
+    <label for="stockSymbol7">Enter Stock Symbols </label>
+    <input type="text" id="stockSymbol7">
+    <button onclick="fetchMensisData()">Mensis Data</button>
+
+    <div id="mensisInfoContainer">
+        <!-- Mensis info will be inserted here -->
+    </div>
+
+</body>
+
+<head>
+    <title>Positionsgröße von Aktien</title>
+    <script>
+        function calculatePositionSize() {
+          // Werte aus den Eingabefeldern auslesen
+          var kontostand = parseFloat(document.getElementById("kontostand").value.replace(",", "."));
+          var kursrisiko = parseFloat(document.getElementById("kursrisiko").value.replace(",", "."));
+    
+          // Positionsgröße (Stückzahl) berechnen
+          var prozentsatz = 1; // 1% des Kontostands
+          var stückzahl = Math.floor((kontostand * prozentsatz / 100) / kursrisiko); // Abrunden auf die nächste ganze Zahl
+    
+          // Ergebnis anzeigen
+          document.getElementById("stückzahl").innerHTML = stückzahl;
+        }
+      </script>
+    </head>
+    <body>
+    <h1>QUANTITY</h1>
+    <label for="kontostand">Account balance:</label>
+    <input id="kontostand" type="text"/><br/>
+    <label for="kursrisiko">Risk in points:</label>
+    <input id="kursrisiko" type="text"/><br/>
+    <button onclick="calculatePositionSize()">Calculate</button>
+    <p>Shares: <span id="stückzahl"></span></p>
+    </body>
+    
+    
+</html>
+

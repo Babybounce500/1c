@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Positionsgröße von Aktien</title>
+<script>
+    function calculatePositionSize() {
+      // Werte aus den Eingabefeldern auslesen
+      var kontostand = parseFloat(document.getElementById("kontostand").value.replace(",", "."));
+      var kursrisiko = parseFloat(document.getElementById("kursrisiko").value.replace(",", "."));
+
+      // Positionsgröße (Stückzahl) berechnen
+      var prozentsatz = 1; // 1% des Kontostands
+      var stückzahl = Math.floor((kontostand * prozentsatz / 100) / kursrisiko); // Abrunden auf die nächste ganze Zahl
+
+      // Ergebnis anzeigen
+      document.getElementById("stückzahl").innerHTML = stückzahl;
+    }
+  </script>
+</head>
+<body>
+<h1>QUANTITY</h1>
+<label for="kontostand">Kontostand:</label>
+<input id="kontostand" type="text"/><br/>
+<label for="kursrisiko">Kursrisiko:</label>
+<input id="kursrisiko" type="text"/><br/>
+<button onclick="calculatePositionSize()">Berechnen</button>
+<p>Positionsgröße (Stückzahl): <span id="stückzahl"></span></p>
+</body>
+</html>
