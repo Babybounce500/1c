@@ -121,57 +121,80 @@ button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type
 </style></head>
  <body>
   <h1>
-   CFD Handel
+   Future Preis Berechnung
   </h1>
-  <p>
-   Geben Sie den Basiswert und die Stückzahl ein, um den CFD-Preis und die Margin zu berechnen.
-  </p>
-  <div>
-   <label for="basePrice">
-    Basiswert (Euro):
-   </label>
-   <input id="basePrice" step="0.01" type="number" value="100"/>
-  </div>
-  <div>
-   <label for="quantity">
-    Stückzahl:
-   </label>
-   <input id="quantity" step="1" type="number" value="10"/>
-  </div>
-  <button onclick="calculateCfd()">
-   CFD und Margin berechnen
+  <table>
+   <tr>
+    <td>
+     Spotpreis (S):
+    </td>
+    <td>
+     <input id="spotPrice" type="number" value="100"/>
+    </td>
+   </tr>
+   <tr>
+    <td>
+     Risikofreier Zinssatz (r):
+    </td>
+    <td>
+     <input id="riskFreeRate" type="number" value="0.05"/>
+    </td>
+   </tr>
+   <tr>
+    <td>
+     Dividendenrendite (y):
+    </td>
+    <td>
+     <input id="dividendYield" type="number" value="0.02"/>
+    </td>
+   </tr>
+   <tr>
+    <td>
+     Lagerkosten (c):
+    </td>
+    <td>
+     <input id="storageCost" type="number" value="0.01"/>
+    </td>
+   </tr>
+   <tr>
+    <td>
+     Laufzeit des Futures (T):
+    </td>
+    <td>
+     <input id="timeToMaturity" type="number" value="1"/>
+    </td>
+   </tr>
+  </table>
+  <button onclick="calculateFuturePrice()">
+   Future Preis berechnen
   </button>
-  <p id="bidPrice">
-   -
-  </p>
-  <p id="askPrice">
-   -
-  </p>
-  <p id="cfdPrice">
-   -
-  </p>
-  <p id="margin">
-   -
+  <p id="futurePrice">
   </p>
   <script>
-   function calculateCfd() {
-            const spreadPercent = 0.05;
-            const marginRequirement = 0.1;
-            const basePrice = parseFloat(document.getElementById("basePrice").value);
-            const quantity = parseFloat(document.getElementById("quantity").value);
+   function calculateFuturePrice() {
+            var S = parseFloat(document.getElementById('spotPrice').value);
+            var r = parseFloat(document.getElementById('riskFreeRate').value);
+            var y = parseFloat(document.getElementById('dividendYield').value);
+            var c = parseFloat(document.getElementById('storageCost').value);
+            var T = parseFloat(document.getElementById('timeToMaturity').value);
 
-            const spread = basePrice * spreadPercent;
-            const bidPrice = basePrice - spread / 2;
-            const askPrice = basePrice + spread / 2;
+            var F = S * Math.exp((r - y + c) * T);
 
-            const cfdPrice = (bidPrice + askPrice) / 2;
-            const margin = cfdPrice * quantity * marginRequirement;
-
-            document.getElementById("bidPrice").innerText = "Geldkurs (Bid): " + bidPrice.toFixed(2) + " Euro";
-            document.getElementById("askPrice").innerText = "Briefkurs (Ask): " + askPrice.toFixed(2) + " Euro";
-            document.getElementById("cfdPrice").innerText = "CFD-Preis: " + cfdPrice.toFixed(2) + " Euro";
-            document.getElementById("margin").innerText = "Margin: " + margin.toFixed(2) + " Euro";
+            document.getElementById('futurePrice').innerHTML = 'Future Preis: ' + F.toFixed(2);
         }
   </script>
+  <p>
+   In diesem Code sind die Beispieleingaben wie folgt:
+
+Spotpreis (S): 100
+Risikofreier Zinssatz (r): 0.05 (was 5% entspricht)
+Dividendenrendite (y): 0.02 (was 2% entspricht)
+Lagerkosten (c): 0.01 (was 1% entspricht)
+Laufzeit des Futures (T): 1 Jahr
+  </p>
+  <p>
+   F=S×e 
+    (r−y+c)T
+  </p>
  </body>
 </html>
