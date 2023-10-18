@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Anfrage für Aktienkurse</title>
+<style>
+body {
+    background-color: #251532; /* Hintergrundfarbe */
+    color: white; /* Textfarbe */
+    font-family: Arial, sans-serif; /* Schriftart */
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+
+        /* Add your CSS styling here */
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+    
+/* Dark theme styles */
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+button {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.chat-window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Mobile Responsive styles */
+@media only screen and (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Banking Style for Input Fields */
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Banking Style for Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 3px solid #333;
+    text-align: left;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Banking Style for Containers */
+.container {
+    background-color: #1e1e1e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Responsive Table Styles for Mobile Devices */
+@media screen and (max-width: 768px) {
+    table {
+        width: auto;
+    }
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+
+/* Targeted Styles to Make All Buttons Bigger and User-Friendly */
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+    padding: 20px 40px;
+    font-size: 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover, input[type="button"]:hover, input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+</style></head>
+<body>
+    <h1>Sportwetten Quoten Abfrage</h1>
+    <form id="oddsForm">
+        <label for="region">Region: </label>
+        <select id="region" name="region" required>
+            <option value="us">US</option>
+            <option value="uk">UK</option>
+            <option value="eu">EU</option>
+            <!-- Weitere Regionen hier hinzufügen -->
+        </select><br><br>
+      
+        <label for="oddsFormat">Quotenformat: </label>
+        <select id="oddsFormat" name="oddsFormat" required>
+            <option value="decimal">Decimal</option>
+            <option value="fractional">Fractional</option>
+            <option value="moneyline">Moneyline</option>
+            <!-- Weitere Quotenformate hier hinzufügen -->
+        </select><br><br>
+      
+        <label for="markets">Märkte: </label>
+        <select id="markets" name="markets" required>
+            <option value="h2h">H2H</option>
+            <option value="spreads">Spreads</option>
+            <option value="totals">Totals</option>
+            <!-- Weitere Märkte hier hinzufügen -->
+        </select><br><br>
+      
+        <label for="dateFormat">Datumsformat: </label>
+        <select id="dateFormat" name="dateFormat" required>
+            <option value="iso">ISO</option>
+            <option value="dd-mm-yyyy">DD-MM-YYYY</option>
+            <option value="mm-dd-yyyy">MM-DD-YYYY</option>
+            <!-- Weitere Datumsformate hier hinzufügen -->
+        </select><br><br>
+      
+        <label for="sport">Sportart: </label>
+        <select id="sport" name="sport" required>
+            <option value="Basketball Euroleague">Basketball Euroleague</option>
+            <option value="Football Premier League">Football Premier League</option>
+            <option value="Tennis Wimbledon">Tennis Wimbledon</option>
+            <!-- Weitere Sportarten hier hinzufügen -->
+        </select><br><br>
+      
+        <input type="submit" value="Daten abrufen">
+    </form>
+    <h2>Ergebnis:</h2>
+    <table id="resultTable" border="1">
+        <thead>
+            <tr>
+                <th>Sport</th>
+                <th>Beginnzeit</th>
+                <th>Heimteam</th>
+                <th>Auswärtsteam</th>
+                <th>Bookmaker</th>
+                <th>Markt</th>
+                <th>Outcome</th>
+                <th>Preis</th>
+                <th>Punkt</th>
+            </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+    </table>
+
+    <script>
+        // Funktion zum Abrufen der Daten
+        async function fetchData() {
+            const region = document.getElementById("region").value;
+            const oddsFormat = document.getElementById("oddsFormat").value;
+            const markets = document.getElementById("markets").value;
+            const dateFormat = document.getElementById("dateFormat").value;
+
+            const url = `https://odds.p.rapidapi.com/v4/sports/upcoming/odds?regions=${region}&oddsFormat=${oddsFormat}&markets=${markets}&dateFormat=${dateFormat}`;
+
+            const options = {
+                method: 'GET',
+                headers: {
+                    'X-RapidAPI-Key': 'e5815e0e65mshcf935d32fb60178p1b17dejsn91469437e706',
+                    'X-RapidAPI-Host': 'odds.p.rapidapi.com'
+                }
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.text();
+                const resultTable = document.getElementById("resultTable");
+                const resultBody = document.getElementById("resultBody");
+
+                // Lösche vorherige Ergebnisse
+                resultBody.innerHTML = "";
+
+                // JSON-Daten in ein JavaScript-Objekt umwandeln
+                const jsonData = JSON.parse(data);
+
+                // Ein Objekt erstellen, um die besten Quoten für jedes Outcome zu speichern
+                const bestOdds = {};
+
+                // Durchlaufe die Daten und aktualisiere die besten Quoten
+                jsonData.forEach(event => {
+                    event.bookmakers.forEach(bookmaker => {
+                        bookmaker.markets.forEach(market => {
+                            market.outcomes.forEach(outcome => {
+                                const outcomeKey = outcome.name;
+                                if (!(outcomeKey in bestOdds) || outcome.price > bestOdds[outcomeKey].price) {
+                                    bestOdds[outcomeKey] = {
+                                        sport: event.sport_title,
+                                        commence_time: event.commence_time,
+                                        home_team: event.home_team,
+                                        away_team: event.away_team,
+                                        bookmaker: bookmaker.title,
+                                        market: market.key,
+                                        outcome: outcome.name,
+                                        price: outcome.price,
+                                        point: outcome.point,
+                                    };
+                                }
+                            });
+                        });
+                    });
+                });
+
+                // Erstelle die Tabelle mit den besten Quoten
+                for (const key in bestOdds) {
+                    if (bestOdds.hasOwnProperty(key)) {
+                        const odd = bestOdds[key];
+                        const row = resultBody.insertRow();
+                        row.insertCell().textContent = odd.sport;
+                        row.insertCell().textContent = odd.commence_time;
+                        row.insertCell().textContent = odd.home_team;
+                        row.insertCell().textContent = odd.away_team;
+                        row.insertCell().textContent = odd.bookmaker;
+                        row.insertCell().textContent = odd.market;
+                        row.insertCell().textContent = odd.outcome;
+                        row.insertCell().textContent = odd.price;
+                        row.insertCell().textContent = odd.point;
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById("resultBody").textContent = "Fehler beim Abrufen der Daten.";
+            }
+        }
+
+        // Automatisches Abrufen der Daten beim Laden der Seite
+        window.addEventListener("load", fetchData);
+    </script>
+</body>
+</html>
