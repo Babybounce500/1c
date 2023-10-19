@@ -8,25 +8,48 @@
     /* Zentrieren des Textes im Header */
     h1 {
       text-align: center;
+      font-size: 3em;  /* 50% größer */
     }
 
-    /* Zentrieren des Textes im navbar */
-    .navbar-brand {
-      margin: 0 auto;
+    /* Zentrieren des Textes in der Navbar */
+    .navbar {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Zentrieren des Hauptcontainers */
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Zentrieren und Vergrößern des Inhalts in den Karten */
+    .card-body {
+      text-align: center;
+      font-size: 1.5em;  /* 50% größer */
+    }
+
+    /* Vergrößern der Buttons */
+    .btn {
+      font-size: 1.5em;  /* 50% größer */
+    }
+
+    /* Beibehalten der Größe der anderen Überschriften */
+    .card-title {
+      font-size: 1.5em;  /* Angepasste Größe */
     }
   </style>
 </head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <a class="navbar-brand" href="#">DOMVS AVREA O.P.N </a>
+    <a class="navbar-brand" href="#" style="font-size: 1.5em;">DOMVS AVREA O.P.N</a>  <!-- 50% größer -->
   </nav>
 
- 
+  <div class="container mt-5 main-container">
+    <h1>DOMVS AVREA O.P.N <br> AI AUCTIONS</h1>
 
-  <div class="container mt-5">
-    <h1>DOMVS AVREA O.P.N <br>AI AUCTIONS</h1>
-  
 
     <div class="row mt-4">
       <div class="col-md-6">
@@ -34,7 +57,7 @@
           <div class="card-body">
             <h5 class="card-title">Stock Auction</h5>
             <p class="card-text">Klicken Sie hier, um zur Stock Auction zu gelangen.</p>
-            <a href="link-zu-deiner-stock-auction.html" class="btn btn-primary">Stock Auction anzeigen</a>
+            <a href="link-zu-deiner-stock-auction.html" class="btn btn-primary">Stock Auction </a>
           </div>
         </div>
       </div>
@@ -44,7 +67,7 @@
           <div class="card-body">
             <h5 class="card-title">Market Maker Auction</h5>
             <p class="card-text">Klicken Sie hier, um zur Market Maker Auction zu gelangen.</p>
-            <a href="link-zu-deiner-market-maker-auction.html" class="btn btn-primary">Market Maker Auction anzeigen</a>
+            <a href="link-zu-deiner-market-maker-auction.html" class="btn btn-primary">Market Maker Auction </a>
           </div>
         </div>
       </div>
@@ -56,8 +79,7 @@
           <div class="card-body">
             <h5 class="card-title">NFT Auction Orderbook</h5>
             <p class="card-text">Klicken Sie hier, um zum NFT Auction Orderbook zu gelangen.</p>
-            <a href="link-zu-deinem-nft-orderbook.html" class="btn btn-primary">NFT Auction Orderbook anzeigen</a>
-           
+            <a href="link-zu-deinem-nft-orderbook.html" class="btn btn-primary">NFT Auction Orderbook </a>
           </div>
         </div>
       </div>
@@ -67,7 +89,7 @@
           <div class="card-body">
             <h5 class="card-title">NFT Auction Highest Bid</h5>
             <p class="card-text">Klicken Sie hier, um zum NFT Auction Highest Bid zu gelangen.</p>
-            <a href="link-zu-deinem-nft-highest-bid.html" class="btn btn-primary">NFT Auction Highest Bid anzeigen</a>
+            <a href="link-zu-deinem-nft-highest-bid.html" class="btn btn-primary">NFT Auction Highest Bid </a>
           </div>
         </div>
       </div>
