@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kombinierte Aktienanalyse</title>
+</head>
+<body>
+
+<h1>PERFORMANCE CONSULTUS.AI Weekly</h1>
+
+<!-- Input for Stock Symbol -->
+<input type="text" id="stockSymbolCandle" placeholder="AAPL,NKE,MSFT">
+<button onclick="performCandleApiRequest()">Check Trade</button>
+
+<!-- Result Table -->
+<table id="ergebnisTable">
+  <tr>
+    <th>Name</th>
+    <th>LONG</th>
+    <th>SHORT</th>
+    <th>Risk</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>Performance</th>
+  </tr>
+</table>
+
+<script>
+let lastFridayDate = null;
+
+function performCandleApiRequest() {
+  const stockSymbols = document.getElementById('stockSymbolCandle').value.toUpperCase().split(',');
+  
+  stockSymbols.forEach(stockSymbol => {
+    const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol.trim()}?api_token=64d7d0670ee1f8.90133693&fmt=json`;
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        const fridayData = data.filter(item => new Date(item.date).getDay() === 5).slice(-3);
+        if (fridayData.length >= 2) {
+          const kursA = fridayData[2].close.toFixed(2);
+          const kursB = fridayData[1].close.toFixed(2);
+          const kursC = fridayData[0]?.close.toFixed(2) || 0;
+          lastFridayDate = fridayData[2].date;
+          analyzeStocks(stockSymbol, kursA, kursB, kursC);
+        }
+      })
+      .catch(error => {
+        console.error('There was an error fetching the candle data:', error);
+      });
+  });
+}
+
+function analyzeStocks(aktienname, kursA, kursB, kursC) {
+  const row = document.getElementById("ergebnisTable").insertRow(-1);
+  row.insertCell(0).innerHTML = aktienname;
+  
+  const diffAB = Math.abs(kursA - kursB);
+  const diffCB = Math.abs(kursC - kursB);
+  const result = (diffAB < diffCB) ? 'GO' : 'NO';
+  
+  if (result === 'NO') {
+    row.insertCell(1).innerHTML = "NO";
+  } else {
+    const LONG = Math.max(kursA, kursB, kursC);
+    const SHORT = Math.min(kursA, kursB, kursC);
+    const Kursrisiko = Math.abs(LONG - SHORT).toFixed(2);
+    
+    row.insertCell(1).innerHTML = LONG;
+    row.insertCell(2).innerHTML = SHORT;
+    row.insertCell(3).innerHTML = Kursrisiko;
+    row.insertCell(4).innerHTML = lastFridayDate;
+    row.insertCell(5).innerHTML = "Offen"; // Status
+    row.insertCell(6).innerHTML = "N/A"; // Performance
+  }
+}
+</script>
+
+</body>
+</html>
