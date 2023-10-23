@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kombinierte Aktienanalyse</title>
+</head>
+<body>
+
+<h1>PERFORMANCE CONSULTUS.AI Weekly</h1>
+
+<!-- Input for Stock Symbol -->
+<input type="text" id="stockSymbolCandle" placeholder="AAPL,NKE,MSFT">
+<button onclick="performCandleApiRequest()">Check Trade</button>
+
+<!-- Result Table -->
+<table id="ergebnisTable">
+  <tr>
+    <th>Name</th>
+    <th>LONG</th>
+    <th>SHORT</th>
+    <th>Risk</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>Performance</th>
+    <th>Current Close</th> <!-- Neue Spalte für aktuellen Schlusskurs -->
+  </tr>
+</table>
+
+<script>
+let lastFridayDate = null;
+
+function performCandleApiRequest() {
+    const stockSymbols = document.getElementById('stockSymbolCandle').value.toUpperCase().split(',');
+  
+    stockSymbols.forEach(stockSymbol => {
+        const apiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol.trim()}?api_token=64d7d0670ee1f8.90133693&fmt=json`;
+        fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const fridayData = data.filter(item => new Date(item.date).getDay() === 5).slice(-3);
+            if (fridayData.length >= 1) {
+                const kursA = fridayData[2]?.close.toFixed(2) || 0;
+                const kursB = fridayData[1]?.close.toFixed(2) || 0;
+                const kursC = fridayData[0]?.close.toFixed(2) || 0;
+                lastFridayDate = fridayData[0]?.date || 'N/A';
+                
+                // Get the current date
+                const currentDate = new Date().toISOString().split('T')[0];
+                
+                // Fetch current close using the performApiRequest function logic
+                const currentCloseApiUrl = `https://eodhistoricaldata.com/api/eod/${stockSymbol}?api_token=64d7d0670ee1f8.90133693&fmt=json&from=${currentDate}&to=${currentDate}`;
+                fetch(currentCloseApiUrl)
+                .then(response => response.json())
+                .then(currentData => {
+                    const currentClose = currentData[0]?.close.toFixed(2) || 'N/A';
+                    analyzeStocks(stockSymbol, kursA, kursB, kursC, currentClose);
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the current close:', error);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('There was an error fetching the candle data:', error);
+        });
+    });
+}
+
+function analyzeStocks(aktienname, kursA, kursB, kursC, currentClose) {
+    const diffAB = Math.abs(kursA - kursB);
+    const diffCB = Math.abs(kursC - kursB);
+    const result = (diffAB < diffCB) ? 'GO' : 'NO';
+    
+    // Wenn das Ergebnis "NO" ist, fügen wir keine Zeile zur Tabelle hinzu.
+    if (result === 'NO') {
+        return; 
+    }
+
+    const row = document.getElementById("ergebnisTable").insertRow(-1);
+    row.insertCell(0).innerHTML = aktienname;
+
+    const LONG = Math.max(kursA, kursB, kursC);
+    const SHORT = Math.min(kursA, kursB, kursC);
+    const Kursrisiko = Math.abs(LONG - SHORT).toFixed(2);
+    
+    row.insertCell(1).innerHTML = LONG;
+    row.insertCell(2).innerHTML = SHORT;
+    row.insertCell(3).innerHTML = Kursrisiko;
+    row.insertCell(4).innerHTML = lastFridayDate;
+    
+    let status = "Offen";
+    let performance = "N/A";
+
+    if (currentClose < SHORT) {
+        status = "Executed";
+        performance = (SHORT - currentClose).toFixed(2);
+    } else if (currentClose > LONG) {
+        status = "Executed";
+        performance = (currentClose - LONG).toFixed(2);
+    }
+
+    row.insertCell(5).innerHTML = status;
+    row.insertCell(6).innerHTML = performance;
+    row.insertCell(7).innerHTML = currentClose;
+}
+
+</script>
+
+</body>
+</html>
