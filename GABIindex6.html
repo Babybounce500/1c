@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Rechtsanwaltskanzlei</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+   <style>.parallax-container {
+    height: 500px; /* Standardhöhe, kann angepasst werden */
+}
+
+/* Media Query für kleine Bildschirme (z.B. Handys) */
+@media (max-width: 600px) {
+    .parallax-container {
+        height: 300px; /* Kleinere Höhe für mobile Geräte */
+    }
+}
+
+/* Media Query für größere Bildschirme */
+@media (min-width: 601px) {
+    .parallax-container {
+        height: 100vh; /* Volle Bildschirmhöhe auf größeren Bildschirmen */
+    }
+}</style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo">Kanzlei XYZ</a>
+            <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Dienstleistungen</a></li>
+                <li><a href="#">Über uns</a></li>
+                <li><a href="#">Team</a></li>
+                <li><a href="#">Karriere</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Kontakt</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <ul class="sidenav" id="mobile-nav">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Dienstleistungen</a></li>
+        <li><a href="#">Über uns</a></li>
+        <li><a href="#">Team</a></li>
+        <li><a href="#">Karriere</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Kontakt</a></li>
+    </ul>
+
+    <!-- Hero Section -->
+    <div class="parallax-container">
+        <div class="parallax">
+            <img src="https://babybounce500.github.io/KUNST3/27.jpg" alt="Hero Image">
+        </div>
+        <div class="container">
+            <h1 class="header center white-text"></h1>
+            <div class="row center">
+                <h5 class="header col s12 light"></h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col s12 center">
+                    <p>&copy; 2023 Kanzlei XYZ</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        
+            // Mobile Navigation
+            var elems = document.querySelectorAll('.sidenav');
+            var instances = M.Sidenav.init(elems);
+
+            // Parallax
+            var elemsParallax = document.querySelectorAll('.parallax');
+            var instancesParallax = M.Parallax.init(elemsParallax);
+
+        });
+    </script>
+</body>
+
+</html>
