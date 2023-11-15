@@ -13,9 +13,14 @@
 }
 
 /* Media Query für kleine Bildschirme (z.B. Handys) */
+/* Media Query für kleine Bildschirme (z.B. Handys) */
 @media (max-width: 600px) {
     .parallax-container {
-        height: 300px; /* Kleinere Höhe für mobile Geräte */
+        height: 400px; /* Erhöhe die Höhe für mobile Geräte */
+    }
+
+    .parallax img {
+        min-height: 400px; /* Stelle sicher, dass das Bild hoch genug ist */
     }
 }
 
