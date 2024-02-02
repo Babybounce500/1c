@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buchhaltungsapp</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="h3 mb-4">Monatliche Einnahmen und Ausgaben</h1>
+        
+        <form>
+            <div class="form-group">
+                <label for="type">Typ:</label>
+                <select id="type" class="form-control">
+                    <option value="einnahmen">Einnahmen</option>
+                    <option value="ausgaben">Ausgaben</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="betrag">Betrag:</label>
+                <input type="number" id="betrag" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="beschreibung">Beschreibung:</label>
+                <input type="text" id="beschreibung" class="form-control">
+            </div>
+            
+            <div class="form-check">
+                <input type="checkbox" id="fix" class="form-check-input">
+                <label for="fix" class="form-check-label">Fix:</label>
+            </div>
+            
+            <button type="button" class="btn btn-primary mt-2" onclick="addEntry()">Hinzufügen</button>
+        </form>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h2 class="h5">Einnahmen</h2>
+                <ul id="einnahmenList" class="amount-list"></ul>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h5">Ausgaben</h2>
+                <ul id="ausgabenList" class="amount-list"></ul>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h2 class="h5">Fixe Einnahmen</h2>
+                <ul id="fixeEinnahmenList" class="amount-list"></ul>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h5">Fixe Ausgaben</h2>
+                <ul id="fixeAusgabenList" class="amount-list"></ul>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h2 class="h5">Monatliche Abrechnung</h2>
+                <div id="abrechnung"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        var einnahmen = [];
+        var ausgaben = [];
+        var fixeEinnahmen = [];
+        var fixeAusgaben = [];
+
+        function addEntry() {
+            var type = document.getElementById("type").value;
+            var betrag = document.getElementById("betrag").value;
+            var beschreibung = document.getElementById("beschreibung").value;
+            var fix = document.getElementById("fix").checked;
+            var datum = new Date().toLocaleDateString();
+
+            if(type === "einnahmen") {
+                if (fix) {
+                    fixeEinnahmen.push({ beschreibung: beschreibung, betrag: betrag, datum: datum });
+                    localStorage.setItem("fixeEinnahmen", JSON.stringify(fixeEinnahmen));
+                    displayFixeEinnahmen();
+                } else {
+                    einnahmen.push({ beschreibung: beschreibung, betrag: betrag, datum: datum });
+                    localStorage.setItem("einnahmen", JSON.stringify(einnahmen));
+                    displayEinnahmen();
+                }
+            } else {
+                if (fix) {
+                    fixeAusgaben.push({ beschreibung: beschreibung, betrag: betrag, datum: datum });
+                    localStorage.setItem("fixeAusgaben", JSON.stringify(fixeAusgaben));
+                    displayFixeAusgaben();
+                } else {
+                    ausgaben.push({ beschreibung: beschreibung, betrag: betrag, datum: datum });
+                    localStorage.setItem("ausgaben", JSON.stringify(ausgaben));
+                    displayAusgaben();
+                }
+            }
+
+            calculateAbrechnung();
+        }
+
+        function deleteEntry(type, index) {
+  if (type === "einnahmen") {
+    einnahmen.splice(index, 1);
+    localStorage.setItem("einnahmen", JSON.stringify(einnahmen));
+    displayEinnahmen();
+  } else if (type === "ausgaben") {
+    ausgaben.splice(index, 1);
+    localStorage.setItem("ausgaben", JSON.stringify(ausgaben));
+    displayAusgaben();
+  } else if (type === "fixeEinnahmen") {
+    fixeEinnahmen.splice(index, 1);
+    localStorage.setItem("fixeEinnahmen", JSON.stringify(fixeEinnahmen));
+    displayFixeEinnahmen();
+  } else if (type === "fixeAusgaben") {
+    fixeAusgaben.splice(index, 1);
+    localStorage.setItem("fixeAusgaben", JSON.stringify(fixeAusgaben));
+    displayFixeAusgaben();
+  }
+  calculateAbrechnung();
+}
+
+// Funktionen zum Anzeigen der Einträge nach dem Löschen aktualisieren
+function displayEinnahmen() {
+  var einnahmenList = document.getElementById("einnahmenList");
+  einnahmenList.innerHTML = "";
+  einnahmen.forEach(function (einnahme, index) {
+    einnahmenList.innerHTML += `<li>${einnahme.datum} - ${einnahme.beschreibung}: € ${einnahme.betrag} <button onclick="deleteEntry('einnahmen', ${index})">Löschen</button></li>`;
+  });
+}
+
+function displayAusgaben() {
+  var ausgabenList = document.getElementById("ausgabenList");
+  ausgabenList.innerHTML = "";
+  ausgaben.forEach(function (ausgabe, index) {
+    ausgabenList.innerHTML += `<li>${ausgabe.datum} - ${ausgabe.beschreibung}: € ${ausgabe.betrag} <button onclick="deleteEntry('ausgaben', ${index})">Löschen</button></li>`;
+  });
+}
+
+function displayFixeEinnahmen() {
+  var fixeEinnahmenList = document.getElementById("fixeEinnahmenList");
+  fixeEinnahmenList.innerHTML = "";
+  fixeEinnahmen.forEach(function (fixeEinnahme, index) {
+    fixeEinnahmenList.innerHTML += `<li>${fixeEinnahme.beschreibung}: € ${fixeEinnahme.betrag} <button onclick="deleteEntry('fixeEinnahmen', ${index})">Löschen</button></li>`;
+  });
+}
+
+function displayFixeAusgaben() {
+  var fixeAusgabenList = document.getElementById("fixeAusgabenList");
+  fixeAusgabenList.innerHTML = "";
+  fixeAusgaben.forEach(function (fixeAusgabe, index) {
+    fixeAusgabenList.innerHTML += `<li>${fixeAusgabe.beschreibung}: € ${fixeAusgabe.betrag} <button onclick="deleteEntry('fixeAusgaben', ${index})">Löschen</button></li>`;
+  });
+}
+
+        function calculateAbrechnung() {
+    var gesamtEinnahmen = 0;
+    var gesamtAusgaben = 0;
+
+    einnahmen.forEach(function (einnahme) {
+        gesamtEinnahmen += parseInt(einnahme.betrag);
+    });
+
+    fixeEinnahmen.forEach(function (fixeEinnahme) {
+        gesamtEinnahmen += parseInt(fixeEinnahme.betrag);
+    });
+
+    ausgaben.forEach(function (ausgabe) {
+        gesamtAusgaben += parseInt(ausgabe.betrag);
+    });
+
+    fixeAusgaben.forEach(function (fixeAusgabe) {
+        gesamtAusgaben += parseInt(fixeAusgabe.betrag);
+    });
+
+    var saldo = gesamtEinnahmen - gesamtAusgaben;
+    var monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    document.getElementById("abrechnung").innerHTML = monat + " - Saldo: €" + saldo;
+}
+
+        // Werte im Local Storage wiederherstellen
+        if(localStorage.getItem("einnahmen")) {
+            einnahmen = JSON.parse(localStorage.getItem("einnahmen"));
+            displayEinnahmen();
+        }
+
+        if(localStorage.getItem("ausgaben")) {
+            ausgaben = JSON.parse(localStorage.getItem("ausgaben"));
+            displayAusgaben();
+        }
+
+        if(localStorage.getItem("fixeEinnahmen")) {
+            fixeEinnahmen = JSON.parse(localStorage.getItem("fixeEinnahmen"));
+            displayFixeEinnahmen();
+        }
+
+        if(localStorage.getItem("fixeAusgaben")) {
+            fixeAusgaben = JSON.parse(localStorage.getItem("fixeAusgaben"));
+            displayFixeAusgaben();
+        }
+
+        calculateAbrechnung();
+    </script>
+</body>
+</html>
